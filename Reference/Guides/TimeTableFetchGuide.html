@@ -1,0 +1,1013 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>UPES myUPES API</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+/* === LAYOUT: sticky sidebar + scrollable content === */
+:root {
+  --bg: #f8f9fb;
+  --bg-surface: #ffffff;
+  --bg-code: #1a1d23;
+  --bg-code-inline: #eef0f4;
+  --fg: #1c1e26;
+  --fg-muted: #6b7280;
+  --fg-code: #e2e8f0;
+  --border: #e2e5ea;
+  --accent: #0ea5e9;
+  --accent-dim: #e0f2fe;
+  --method-get: #16a34a;
+  --method-get-bg: #dcfce7;
+  --method-post: #d97706;
+  --method-post-bg: #fef3c7;
+  --tag-required: #dc2626;
+  --tag-optional: #6b7280;
+
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1117;
+    --bg-surface: #1a1d24;
+    --bg-code: #0d1117;
+    --bg-code-inline: #1e2230;
+    --fg: #e2e8f0;
+    --fg-muted: #8b92a0;
+    --fg-code: #e2e8f0;
+    --border: #2a2f3d;
+    --accent: #38bdf8;
+    --accent-dim: #0c2a3a;
+    --method-get: #4ade80;
+    --method-get-bg: #052e16;
+    --method-post: #fbbf24;
+    --method-post-bg: #1c1000;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1117;
+  --bg-surface: #1a1d24;
+  --bg-code: #0d1117;
+  --bg-code-inline: #1e2230;
+  --fg: #e2e8f0;
+  --fg-muted: #8b92a0;
+  --fg-code: #e2e8f0;
+  --border: #2a2f3d;
+  --accent: #38bdf8;
+  --accent-dim: #0c2a3a;
+  --method-get: #4ade80;
+  --method-get-bg: #052e16;
+  --method-post: #fbbf24;
+  --method-post-bg: #1c1000;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+  padding-left: max(0px, env(safe-area-inset-left, 0px));
+  padding-right: max(0px, env(safe-area-inset-right, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* TOP NAV */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 100;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 max(20px, env(safe-area-inset-left, 0px));
+  height: 52px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 200;
+  background: var(--bg-surface);
+}
+
+.topbar-logo {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.topbar-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+.topbar-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--accent-dim);
+  color: var(--accent);
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+}
+.topbar-spacer { flex: 1; }
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: var(--font-ui);
+  cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+/* PAGE SHELL */
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px max(20px, env(safe-area-inset-left, 0px));
+  padding-bottom: 80px;
+}
+
+/* TOC */
+.toc {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px 24px;
+  margin-bottom: 40px;
+}
+.toc-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 12px;
+}
+.toc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.toc-list a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg);
+  text-decoration: none;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.toc-list a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* FLOW DIAGRAM */
+.flow {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 24px;
+  margin-bottom: 40px;
+}
+.flow-title {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 16px;
+}
+.flow-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 12px;
+}
+.flow-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.flow-step-label { font-weight: 500; }
+.flow-step-sub { color: var(--fg-muted); font-family: var(--font-mono); font-size: 10px; }
+.flow-arrow { color: var(--fg-muted); font-size: 16px; }
+
+/* SECTIONS */
+.section {
+  margin-bottom: 48px;
+  scroll-margin-top: 72px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.section-num {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  text-wrap: balance;
+}
+
+/* ENDPOINT CARDS */
+.endpoint {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.endpoint-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.method-badge {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 5px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.method-get { background: var(--method-get-bg); color: var(--method-get); }
+.method-post { background: var(--method-post-bg); color: var(--method-post); }
+.endpoint-url {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fg);
+  word-break: break-all;
+  min-width: 0;
+}
+.endpoint-body { padding: 20px; }
+.endpoint-desc {
+  color: var(--fg-muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+/* TABLES */
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+.params-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.params-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.params-table tr:last-child td { border-bottom: none; }
+.params-table code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-code-inline);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.tag-required {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tag-required);
+  letter-spacing: 0.04em;
+}
+.tag-optional {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--tag-optional);
+  letter-spacing: 0.04em;
+}
+
+/* SUB-LABELS */
+.sub-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 16px 0 8px;
+}
+
+/* CODE BLOCKS */
+.code-block {
+  position: relative;
+  background: var(--bg-code);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.code-lang {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b92a0;
+}
+.copy-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8b92a0;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+.copy-btn.copied { color: #4ade80; border-color: #4ade80; }
+
+.code-block pre {
+  margin: 0;
+  padding: 14px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--fg-code);
+}
+
+/* KEY HIGHLIGHT BANNER */
+.key-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 16px 0;
+  font-size: 12px;
+}
+.key-banner-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.key-banner strong { display: block; margin-bottom: 4px; color: var(--accent); font-size: 12px; }
+.key-banner code {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: rgba(0,0,0,0.15);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* RESPONSE SCHEMA */
+.schema-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.schema-row {
+  display: contents;
+}
+.schema-row > * {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.schema-row:last-child > * { border-bottom: none; }
+.schema-key { font-family: var(--font-mono); font-size: 11px; font-weight: 500; }
+.schema-val { color: var(--fg-muted); }
+.schema-head { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted); background: var(--bg); }
+
+@media (max-width: 580px) {
+  .schema-field { grid-template-columns: 1fr; }
+  .schema-head:nth-child(2) { display: none; }
+  .schema-row > *:first-child { border-bottom: none; padding-bottom: 2px; }
+  .schema-row > *:last-child { padding-top: 2px; color: var(--fg-muted); }
+}
+
+/* INTRO */
+.intro-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.intro-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.intro-card-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin-bottom: 6px;
+}
+.intro-card-value {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  letter-spacing: -0.5px;
+}
+.page-subtitle {
+  color: var(--fg-muted);
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+</style>
+
+<div class="topbar">
+  <span class="topbar-logo">myUPES</span>
+  <span class="topbar-title">API Reference</span>
+  <span class="topbar-badge">BETA</span>
+  <span class="topbar-spacer"></span>
+  <button class="theme-toggle" onclick="toggleTheme()">Toggle theme</button>
+</div>
+
+<div class="page">
+  <h1>myUPES API Reference</h1>
+  <p class="page-subtitle">Reverse-engineered from the UPES mobile app &amp; web portal. Covers auth, student identity, and timetable endpoints.</p>
+
+  <div class="intro-grid">
+    <div class="intro-card">
+      <div class="intro-card-label">Base URL</div>
+      <div class="intro-card-value">https://myupes-beta.upes.ac.in</div>
+    </div>
+    <div class="intro-card">
+      <div class="intro-card-label">Mobile App Secret</div>
+      <div class="intro-card-value">ku7GUMtyT8er51rTfTc7HC</div>
+    </div>
+    <div class="intro-card">
+      <div class="intro-card-label">Content-Type</div>
+      <div class="intro-card-value">application/json</div>
+    </div>
+    <div class="intro-card">
+      <div class="intro-card-label">Date Format (Timetable)</div>
+      <div class="intro-card-value">DD-Mon-YYYY (e.g. 17-Oct-2026)</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-title">Automation Flow</div>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <div>
+          <div class="flow-step-label">Login</div>
+          <div class="flow-step-sub">POST /sso/api/account/oauth2/token</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <div>
+          <div class="flow-step-label">Get Student ID</div>
+          <div class="flow-step-sub">GET /apigateway/connect-portal/…/studentloginbasicinfo</div>
+        </div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <div>
+          <div class="flow-step-label">Fetch Timetable</div>
+          <div class="flow-step-sub">POST /apigateway/api/timetable</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><a href="#auth">1 — Authentication</a></li>
+      <li><a href="#student">2 — Student Info &amp; ID</a></li>
+      <li><a href="#timetable-masters">3 — Timetable Masters</a></li>
+      <li><a href="#timetable">4 — Fetch Timetable</a></li>
+      <li><a href="#headers">5 — Common Headers</a></li>
+      <li><a href="#script">6 — Full Python Script</a></li>
+    </ul>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 1 -->
+  <div class="section" id="auth">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2 class="section-title">Authentication</h2>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-url">/sso/api/account/oauth2/token</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Mobile login endpoint. Bypasses ReCaptcha by setting <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">Captcha: "-"</code> and <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">MobileAppPlatform: "android"</code>. Returns a JWT used for subsequent web portal calls.</p>
+
+        <div class="sub-label">Request Headers</div>
+        <table class="params-table">
+          <thead><tr><th>Header</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>Content-Type</code></td><td>application/json</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-applicationname</code></td><td>oneportal</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-requestfrom</code></td><td>mobile</td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">Request Body</div>
+        <table class="params-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Notes</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>UserId</code></td><td>string</td><td>Your UPES email</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>Password</code></td><td>string</td><td>Your password</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>Captcha</code></td><td>string</td><td>Use <code>"-"</code> to bypass</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>MobileAppPlatform</code></td><td>string</td><td><code>"android"</code> or <code>"ios"</code></td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">cURL Example</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">curl</span>
+            <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+          </div>
+          <pre>curl --location 'https://myupes-beta.upes.ac.in/sso/api/account/oauth2/token' \
+  --header 'Content-Type: application/json' \
+  --header 'x-applicationname: oneportal' \
+  --header 'x-requestfrom: mobile' \
+  --data-raw '{
+    "UserId": "Nikhil.12509@stu.upes.ac.in",
+    "Password": "YOUR_PASSWORD",
+    "Captcha": "-",
+    "MobileAppPlatform": "android"
+  }'</pre>
+        </div>
+
+        <div class="key-banner">
+          <span class="key-banner-icon">🔑</span>
+          <div>
+            <strong>Extract the JWT from the response</strong>
+            Token is at <code>Item.Identity.AccessToken</code>. Pass it as <code>Authorization: Bearer &lt;token&gt;</code> on <strong>all</strong> subsequent portal requests alongside <code>x-appsecret</code>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 2 -->
+  <div class="section" id="student">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2 class="section-title">Student Info &amp; ID</h2>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method-badge method-get">GET</span>
+        <span class="endpoint-url">/apigateway/connect-portal/api/studentloginbasicinfo</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns the student's profile including the <strong>StudentId</strong> (GUID) required as <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">x-studentUniqueId</code> in all timetable requests.</p>
+
+        <div class="sub-label">Request Headers</div>
+        <table class="params-table">
+          <thead><tr><th>Header</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>x-applicationname</code></td><td>connectportal</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-appsecret</code></td><td>ku7GUMtyT8er51rTfTc7HC</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-requestfrom</code></td><td>web</td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">cURL Example</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">curl</span>
+            <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+          </div>
+          <pre>curl 'https://myupes-beta.upes.ac.in/apigateway/connect-portal/api/studentloginbasicinfo' \
+  --header 'x-applicationname: connectportal' \
+  --header 'x-appsecret: ku7GUMtyT8er51rTfTc7HC' \
+  --header 'x-requestfrom: web'</pre>
+        </div>
+
+        <div class="sub-label">Response — Key Fields</div>
+        <div class="schema-field">
+          <div class="schema-row"><div class="schema-head">Field</div><div class="schema-head">Description</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].StudentId</div><div class="schema-val">GUID — used as <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 4px;border-radius:3px;font-size:10px">x-studentUniqueId</code> and in timetable body</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].GlobalId</div><div class="schema-val">Numeric enrollment ID (e.g. 590012509)</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].EmailId</div><div class="schema-val">Student email address</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].TermCode</div><div class="schema-val">Current semester code (e.g. SEM_5)</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].CourseFamilyCode</div><div class="schema-val">Programme code (e.g. BTECH_CS_CSE)</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].CenterCode</div><div class="schema-val">Campus code (e.g. UPES_BID)</div></div>
+          <div class="schema-row"><div class="schema-key">Items[0].AcademicYearCode</div><div class="schema-val">Academic year (e.g. UPES_AY26)</div></div>
+        </div>
+
+        <div class="key-banner">
+          <span class="key-banner-icon">📌</span>
+          <div>
+            <strong>Save Items[0].StudentId — it's your key</strong>
+            Example: <code>a573eb8c-58d3-4f6a-8075-5cc602e7b412</code><br>
+            This GUID goes into <code>x-studentUniqueId</code> header AND the <code>StudentCode</code> field in the timetable body.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 3 -->
+  <div class="section" id="timetable-masters">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2 class="section-title">Timetable Masters (Venue Categories)</h2>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-url">/apigateway/api/timetable/masters</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">Returns lookup/catalogue data used by the timetable view. Pass <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">venuecategory</code> to get venue types with their colour codes.</p>
+
+        <div class="sub-label">Request Headers</div>
+        <table class="params-table">
+          <thead><tr><th>Header</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>Content-Type</code></td><td>application/json</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-applicationname</code></td><td>connectportal</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-appsecret</code></td><td>ku7GUMtyT8er51rTfTc7HC</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-requestfrom</code></td><td>web</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-studentUniqueId</code></td><td>{StudentId GUID}</td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">Request Body</div>
+        <table class="params-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Known Values</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>DropdownType</code></td><td>string</td><td><code>"venuecategory"</code></td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">cURL Example</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">curl</span>
+            <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+          </div>
+          <pre>curl --location 'https://myupes-beta.upes.ac.in/apigateway/api/timetable/masters' \
+  --header 'Content-Type: application/json' \
+  --header 'x-applicationname: connectportal' \
+  --header 'x-appsecret: ku7GUMtyT8er51rTfTc7HC' \
+  --header 'x-requestfrom: web' \
+  --header 'x-studentUniqueId: a573eb8c-58d3-4f6a-8075-5cc602e7b412' \
+  --data-raw '{"DropdownType":"venuecategory"}'</pre>
+        </div>
+
+        <div class="sub-label">Response Example</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">json</span>
+            <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+          </div>
+          <pre>[
+  { "Id": 1, "Code": "VT001", "Name": "Class Room",         "ColorCode": "#006097" },
+  { "Id": 3, "Code": "HCR",   "Name": "Hybrid Class Room",  "ColorCode": "#F4C430" },
+  { "Id": 2, "Code": "OCR",   "Name": "Virtual Class Room", "ColorCode": "#e46097" }
+]</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 4 -->
+  <div class="section" id="timetable">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2 class="section-title">Fetch Timetable</h2>
+    </div>
+
+    <div class="endpoint">
+      <div class="endpoint-header">
+        <span class="method-badge method-post">POST</span>
+        <span class="endpoint-url">/apigateway/api/timetable</span>
+      </div>
+      <div class="endpoint-body">
+        <p class="endpoint-desc">The main timetable endpoint. Returns an array of scheduled slots for the given student within a date range. Use the same date for <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">SlotStartDate</code> and <code style="font-family:var(--font-mono);background:var(--bg-code-inline);padding:1px 5px;border-radius:3px;font-size:11px">SlotEndDate</code> to get a single day's timetable.</p>
+
+        <div class="sub-label">Request Headers</div>
+        <table class="params-table">
+          <thead><tr><th>Header</th><th>Value</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>Content-Type</code></td><td>application/json</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-applicationname</code></td><td>connectportal</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-appsecret</code></td><td>ku7GUMtyT8er51rTfTc7HC</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-requestfrom</code></td><td>web</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>x-studentUniqueId</code></td><td>{StudentId GUID}</td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">Request Body</div>
+        <table class="params-table">
+          <thead><tr><th>Field</th><th>Type</th><th>Notes</th><th></th></tr></thead>
+          <tbody>
+            <tr><td><code>ActivityCode</code></td><td>string</td><td><code>"studentdashboard"</code></td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>TimeTableContextDetails.SlotStartDate</code></td><td>string</td><td>Format: <code>DD-Mon-YYYY</code> e.g. <code>17-Oct-2026</code></td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>TimeTableContextDetails.SlotEndDate</code></td><td>string</td><td>Same format. Same as start for single day.</td><td><span class="tag-required">REQUIRED</span></td></tr>
+            <tr><td><code>TimeTableContextDetails.StudentCode</code></td><td>string</td><td>The StudentId GUID from §2</td><td><span class="tag-required">REQUIRED</span></td></tr>
+          </tbody>
+        </table>
+
+        <div class="sub-label">cURL Example</div>
+        <div class="code-block">
+          <div class="code-block-header">
+            <span class="code-lang">curl</span>
+            <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+          </div>
+          <pre>curl --location 'https://myupes-beta.upes.ac.in/apigateway/api/timetable' \
+  --header 'Content-Type: application/json' \
+  --header 'x-applicationname: connectportal' \
+  --header 'x-appsecret: ku7GUMtyT8er51rTfTc7HC' \
+  --header 'x-requestfrom: web' \
+  --header 'x-studentUniqueId: a573eb8c-58d3-4f6a-8075-5cc602e7b412' \
+  --data-raw '{
+    "ActivityCode": "studentdashboard",
+    "TimeTableContextDetails": {
+      "SlotStartDate": "17-Oct-2026",
+      "SlotEndDate": "17-Oct-2026",
+      "StudentCode": "a573eb8c-58d3-4f6a-8075-5cc602e7b412"
+    }
+  }'</pre>
+        </div>
+
+        <div class="sub-label">Response — Slot Object Fields</div>
+        <div class="schema-field">
+          <div class="schema-row"><div class="schema-head">Field</div><div class="schema-head">Description</div></div>
+          <div class="schema-row"><div class="schema-key">Id</div><div class="schema-val">Unique slot ID</div></div>
+          <div class="schema-row"><div class="schema-key">SlotDate</div><div class="schema-val">e.g. <code style="font-family:var(--font-mono);font-size:11px">2026-Oct-17</code></div></div>
+          <div class="schema-row"><div class="schema-key">SlotStartTime</div><div class="schema-val">e.g. <code style="font-family:var(--font-mono);font-size:11px">09:00 AM</code></div></div>
+          <div class="schema-row"><div class="schema-key">SlotEndTime</div><div class="schema-val">e.g. <code style="font-family:var(--font-mono);font-size:11px">09:55 AM</code></div></div>
+          <div class="schema-row"><div class="schema-key">ModuleList[].ModuleName</div><div class="schema-val">Subject name e.g. "Research Methodology in CS"</div></div>
+          <div class="schema-row"><div class="schema-key">ModuleList[].ModuleCode</div><div class="schema-val">Subject code e.g. "CSEG3060_3"</div></div>
+          <div class="schema-row"><div class="schema-key">TeacherList[].Name</div><div class="schema-val">Faculty name</div></div>
+          <div class="schema-row"><div class="schema-key">FloorPlanDetails.VenueName</div><div class="schema-val">Room/venue name e.g. "10206"</div></div>
+          <div class="schema-row"><div class="schema-key">FloorPlanDetails.VenueCategory</div><div class="schema-val">Class Room / Hybrid / Virtual</div></div>
+          <div class="schema-row"><div class="schema-key">FloorPlanDetails.MeetingLink</div><div class="schema-val">MS Teams link for virtual classes</div></div>
+          <div class="schema-row"><div class="schema-key">DayofWeekDetails.DayOfWeekName</div><div class="schema-val">e.g. "Saturday"</div></div>
+          <div class="schema-row"><div class="schema-key">IsCancelledSlot</div><div class="schema-val">boolean — check this first</div></div>
+          <div class="schema-row"><div class="schema-key">IsRescheduledSlot</div><div class="schema-val">boolean</div></div>
+          <div class="schema-row"><div class="schema-key">IsExtraSlot</div><div class="schema-val">boolean</div></div>
+          <div class="schema-row"><div class="schema-key">RequestId</div><div class="schema-val">Internal request reference</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 5 -->
+  <div class="section" id="headers">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2 class="section-title">Common Headers Reference</h2>
+    </div>
+
+    <table class="params-table" style="background:var(--bg-surface);border-radius:8px;border:1px solid var(--border);overflow:hidden">
+      <thead><tr><th>Header</th><th>connectportal API</th><th>Mobile SSO (login)</th></tr></thead>
+      <tbody>
+        <tr><td><code>x-applicationname</code></td><td>connectportal</td><td>oneportal</td></tr>
+        <tr><td><code>x-requestfrom</code></td><td>web</td><td>mobile</td></tr>
+        <tr><td><code>x-appsecret</code></td><td>ku7GUMtyT8er51rTfTc7HC</td><td>—</td></tr>
+        <tr><td><code>x-studentUniqueId</code></td><td>{StudentId GUID} (timetable calls)</td><td>—</td></tr>
+        <tr><td><code>Content-Type</code></td><td>application/json (POST only)</td><td>application/json</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ SECTION 6 -->
+  <div class="section" id="script">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <h2 class="section-title">Full Python Script</h2>
+    </div>
+
+    <p style="color:var(--fg-muted);font-size:13px;margin-bottom:16px">A minimal script that logs in, fetches the student ID, then retrieves today's timetable. Replace credentials with environment variables in production.</p>
+
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-lang">python</span>
+        <button class="copy-btn" onclick="copyCode(this)">COPY</button>
+      </div>
+      <pre>import requests
+from datetime import datetime
+
+BASE = "https://myupes-beta.upes.ac.in"
+APP_SECRET = "ku7GUMtyT8er51rTfTc7HC"
+
+PORTAL_HEADERS = {
+    "Content-Type": "application/json",
+    "x-applicationname": "connectportal",
+    "x-appsecret": APP_SECRET,
+    "x-requestfrom": "web",
+}
+
+def login(email: str, password: str) -> str:
+    """Logs in and returns the Bearer token (Item.Identity.AccessToken)."""
+    resp = requests.post(
+        f"{BASE}/sso/api/account/oauth2/token",
+        headers={
+            "Content-Type": "application/json",
+            "x-applicationname": "oneportal",
+            "x-requestfrom": "mobile",
+        },
+        json={
+            "UserId": email,
+            "Password": password,
+            "Captcha": "-",
+            "MobileAppPlatform": "android",
+        },
+    )
+    resp.raise_for_status()
+    return resp.json()["Item"]["Identity"]["AccessToken"]
+
+def get_student_id(token: str) -> str:
+    """Returns the StudentId GUID needed for timetable calls."""
+    resp = requests.get(
+        f"{BASE}/apigateway/connect-portal/api/studentloginbasicinfo",
+        headers={**PORTAL_HEADERS, "Authorization": f"Bearer {token}"},
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["Items"][0]["StudentId"]
+
+def get_timetable(student_id: str, date: datetime = None, token: str = "") -> list:
+    """Fetches the timetable for a given date (defaults to today)."""
+    if date is None:
+        date = datetime.today()
+    date_str = date.strftime("%d-%b-%Y")  # e.g. 17-Oct-2026
+
+    resp = requests.post(
+        f"{BASE}/apigateway/api/timetable",
+        headers={**PORTAL_HEADERS, "x-studentUniqueId": student_id, "Authorization": f"Bearer {token}"},
+        json={
+            "ActivityCode": "studentdashboard",
+            "TimeTableContextDetails": {
+                "SlotStartDate": date_str,
+                "SlotEndDate": date_str,
+                "StudentCode": student_id,
+            },
+        },
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def print_timetable(slots: list):
+    """Pretty-prints the timetable."""
+    if not slots:
+        print("No classes today.")
+        return
+    for slot in sorted(slots, key=lambda s: s["SlotStartTime"]):
+        if slot.get("IsCancelledSlot"):
+            continue
+        subject = slot["ModuleList"][0]["ModuleName"] if slot["ModuleList"] else "—"
+        teacher = slot["TeacherList"][0]["Name"] if slot["TeacherList"] else "—"
+        venue   = slot["FloorPlanDetails"]["VenueName"]
+        vtype   = slot["FloorPlanDetails"]["VenueCategory"]
+        link    = slot["FloorPlanDetails"].get("MeetingLink", "")
+        print(f"  {slot['SlotStartTime']} – {slot['SlotEndTime']}")
+        print(f"    {subject}")
+        print(f"    {teacher}  |  {venue} ({vtype})")
+        if link:
+            print(f"    Teams: {link}")
+        print()
+
+if __name__ == "__main__":
+    import os
+    EMAIL    = os.environ["UPES_EMAIL"]
+    PASSWORD = os.environ["UPES_PASSWORD"]
+
+    print("Logging in…")
+    token = login(EMAIL, PASSWORD)
+
+    print("Fetching student ID…")
+    sid = get_student_id(token)
+    print(f"  StudentId: {sid}")
+
+    print("\nToday's timetable:")
+    slots = get_timetable(sid, token=token)
+    print_timetable(slots)</pre>
+    </div>
+
+    <div class="key-banner" style="margin-top:16px">
+      <span class="key-banner-icon">⚠️</span>
+      <div>
+        <strong>Note on authentication</strong>
+        Both <code>x-appsecret</code> AND <code>Authorization: Bearer {token}</code> are required on portal calls. The <code>x-appsecret</code> identifies the app; the Bearer token identifies the user. Without the Bearer token the server returns 500 ("Object reference not set").
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.textContent).then(() => {
+    btn.textContent = 'COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  }).catch(() => {
+    const sel = window.getSelection();
+    const range = document.createRange();
+    range.selectNodeContents(pre);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+}
+
+function toggleTheme() {
+  const root = document.documentElement;
+  const curr = root.getAttribute('data-theme');
+  if (curr === 'dark') root.setAttribute('data-theme', 'light');
+  else if (curr === 'light') root.removeAttribute('data-theme');
+  else root.setAttribute('data-theme', 'dark');
+}
+</script>
+
+</body></html>

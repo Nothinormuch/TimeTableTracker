@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude encrypted prefs from backup (they contain credentials) -->
+    <exclude domain="sharedpref" path="timetable_secure_prefs.xml" />
+    <!-- Include plain settings -->
+    <include domain="sharedpref" path="timetable_plain_prefs.xml" />
+    <!-- Include snapshot and history files -->
+    <include domain="file" path="snapshots/" />
+    <include domain="file" path="history.json" />
+</full-backup-content>

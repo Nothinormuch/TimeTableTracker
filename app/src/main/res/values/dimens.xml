@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="card_corner_radius">12dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+    <dimen name="status_dot_size">10dp</dimen>
+    <dimen name="item_status_badge_padding_h">10dp</dimen>
+    <dimen name="item_status_badge_padding_v">4dp</dimen>
+</resources>
