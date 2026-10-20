@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TimetableTracker" parent="Theme.Material3.DayNight">
+    <style name="Theme.TimetableTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color (UPES Blue) -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>

@@ -50,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         val appBarConfig = AppBarConfiguration(
             setOf(R.id.homeFragment, R.id.settingsFragment, R.id.historyFragment)
         )
+        setSupportActionBar(binding.toolbar)
         setupActionBarWithNavController(navController, appBarConfig)
         binding.bottomNavigation.setupWithNavController(navController)
     }

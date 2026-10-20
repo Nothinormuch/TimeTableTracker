@@ -4,7 +4,7 @@
     <!-- Dark theme — Material 3 DayNight handles most colors automatically.
          Override only values that need explicit dark-mode adjustments. -->
 
-    <style name="Theme.TimetableTracker" parent="Theme.Material3.DayNight">
+    <style name="Theme.TimetableTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorOnPrimary">@color/on_primary</item>
         <item name="colorPrimaryContainer">@color/primary_container</item>
