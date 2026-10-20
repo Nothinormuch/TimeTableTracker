@@ -2,12 +2,14 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,7 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="12dp"
+                app:cardCornerRadius="14dp"
                 app:cardElevation="2dp">
 
                 <LinearLayout
@@ -41,7 +43,8 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Monitoring Status"
-                            android:textAppearance="?attr/textAppearanceTitleMedium" />
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tv_status_badge"
@@ -50,6 +53,7 @@
                             android:text="Idle"
                             android:textColor="@android:color/white"
                             android:textAppearance="?attr/textAppearanceLabelSmall"
+                            android:textStyle="bold"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="4dp"
                             android:background="@drawable/bg_status_badge" />
@@ -83,36 +87,147 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Recent Changes -->
-            <TextView
+            <!-- Timetable Section Header -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Recent Activity"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                android:layout_marginBottom="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <TextView
-                android:id="@+id/tv_no_changes"
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/timetable_section"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_class_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceLabelMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="12 classes" />
+            </LinearLayout>
+
+            <!-- Interactive Legend for Changes -->
+            <LinearLayout
+                android:id="@+id/layout_legend"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="No activity recorded yet."
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurfaceVariant"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp"
+                android:padding="8dp"
+                android:background="@drawable/bg_slot_unchanged">
+
+                <!-- Added legend -->
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/change_added_border"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/changes_legend_added"
+                    android:textAppearance="?attr/textAppearanceLabelSmall" />
+
+                <!-- Deleted legend -->
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/change_deleted_border"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/changes_legend_deleted"
+                    android:textAppearance="?attr/textAppearanceLabelSmall" />
+
+                <!-- Rescheduled legend -->
+                <View
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@color/change_rescheduled_border"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.2"
+                    android:text="@string/changes_legend_rescheduled"
+                    android:textAppearance="?attr/textAppearanceLabelSmall" />
+            </LinearLayout>
+
+            <!-- Day Selector Tabs (Horizontal Scrolling Chips) -->
+            <HorizontalScrollView
+                android:id="@+id/scroll_day_chips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:layout_marginBottom="12dp">
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chip_group_days"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:singleSelection="true"
+                    app:selectionRequired="true" />
+            </HorizontalScrollView>
+
+            <!-- Empty State View -->
+            <LinearLayout
+                android:id="@+id/layout_empty_timetable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:gravity="center"
-                android:padding="24dp"
-                android:visibility="visible" />
+                android:padding="32dp"
+                android:visibility="gone">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📅"
+                    android:textSize="44sp"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_timetable"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/no_timetable_sub"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:gravity="center"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+
+            <!-- Timetable Slots RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_recent_changes"
+                android:id="@+id/rv_timetable_slots"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
-                android:visibility="gone" />
+                android:layout_marginBottom="80dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB -->
+    <!-- FAB: Check Now -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_check_now"
         android:layout_width="wrap_content"

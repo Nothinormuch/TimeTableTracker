@@ -64,24 +64,28 @@ A `BOOT_COMPLETED` `BroadcastReceiver` re-registers the next alarm after a reboo
 - Field-by-field diff for modified slots (time, venue, instructor, cancellation status)
 - Generates a human-readable change report
 
-### 4. Notification system
+### 4. Notification & Visualization system
 
-- **System notification:** `NotificationManager` — fires immediately, no user interaction needed
-- **WhatsApp:** Deep-link intent with pre-filled message; user confirms send once
-- Silent exit if no changes detected
+- **System notification:** `NotificationManager` — fires immediately on detection, no user interaction needed.
+- **In-App Highlighted Timetable:** Displayed directly on the Home tab in a clean, interactive tabular format:
+  - **Green border:** Added classes.
+  - **Red border:** Deleted/removed classes (retained from old timetable for immediate visual contrast).
+  - **Muted-orange border:** Rescheduled/modified classes.
+- Silent exit if no changes detected.
 
 ### 5. Storage layer
 
-- Timetable snapshots as JSON files in app-private storage
-- `SharedPreferences` for metadata (last check time, token expiry, schedule config)
-- Optional change history log
+- Only stores the timetable from the previous check at any instance.
+- When changes are detected, notes the changes, saves the new timetable, and deletes/replaces the old one.
+- Annotated display snapshot file for Home tab UI rendering.
+- `SharedPreferences` for metadata (last check time, token expiry, schedule config).
 
 ### 6. Settings UI
 
-- One-time login screen (WebView or credential form)
+- One-time login screen (credential form)
 - Schedule configuration
 - Manual "check now" trigger
-- Notification channel preferences
+- Notification preferences
 
 ## User flow
 
@@ -96,19 +100,17 @@ A `BOOT_COMPLETED` `BroadcastReceiver` re-registers the next alarm after a reboo
     ↓
 [POST /api/timetable — fetch current slots]
     ↓
-[Parse & store current snapshot]
-    ↓
 [Load previous snapshot]
     ↓
-[Compare] ──→ [No changes] → [Update last-checked time] → [Exit]
+[Compare] ──→ [No changes] → [Save new snapshot / overwrite old] → [Update last-checked time] → [Exit]
     ↓
 [Changes detected]
     ↓
-[Generate change report]
+[Annotate display slots: Green=Added, Red=Deleted, Muted-Orange=Rescheduled]
     ↓
-[Send system notification] + [Fire WhatsApp intent]
+[Overwrite previous snapshot with new timetable]
     ↓
-[Overwrite snapshot with current data]
+[Send system notification]
     ↓
 [Schedule next AlarmManager alarm] → [Exit — process dies]
 ```

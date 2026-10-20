@@ -1,6 +1,5 @@
 package com.timetabletracker.ui.fragments
 
-import android.app.AlarmManager
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -11,13 +10,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.google.android.material.snackbar.Snackbar
 import com.timetabletracker.R
+import com.timetabletracker.data.api.models.DisplaySlot
 import com.timetabletracker.databinding.FragmentHomeBinding
 import com.timetabletracker.scheduler.AlarmScheduler
 import com.timetabletracker.ui.AppStatus
 import com.timetabletracker.ui.MainViewModel
-import com.timetabletracker.ui.adapters.ChangeHistoryAdapter
+import com.timetabletracker.ui.adapters.TimetableSlotAdapter
 
 class HomeFragment : Fragment() {
 
@@ -25,7 +27,11 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: MainViewModel by activityViewModels()
-    private val adapter = ChangeHistoryAdapter()
+    private val adapter = TimetableSlotAdapter()
+
+    // Map of Date string -> List of DisplaySlot
+    private var slotsByDay: Map<String, List<DisplaySlot>> = emptyMap()
+    private var selectedDayKey: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,9 +44,10 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.rvRecentChanges.adapter = adapter
+        binding.rvTimetableSlots.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvTimetableSlots.adapter = adapter
 
-        // Observe LiveData
+        // Observe Status & Times
         viewModel.lastCheckTime.observe(viewLifecycleOwner) { time ->
             binding.tvLastChecked.text = getString(R.string.last_checked, time)
         }
@@ -52,18 +59,12 @@ class HomeFragment : Fragment() {
         viewModel.status.observe(viewLifecycleOwner) { status ->
             updateStatusBadge(status)
             binding.fabCheckNow.isEnabled = status != AppStatus.CHECKING
-            if (status == AppStatus.CHECKING) {
-                binding.progressBar.visibility = View.VISIBLE
-            } else {
-                binding.progressBar.visibility = View.GONE
-            }
+            binding.progressBar.visibility = if (status == AppStatus.CHECKING) View.VISIBLE else View.GONE
         }
 
-        viewModel.changeHistory.observe(viewLifecycleOwner) { history ->
-            val recent = history.take(5)
-            adapter.submitList(recent)
-            binding.tvNoChanges.visibility = if (recent.isEmpty()) View.VISIBLE else View.GONE
-            binding.rvRecentChanges.visibility = if (recent.isEmpty()) View.GONE else View.VISIBLE
+        // Observe Timetable Display Slots
+        viewModel.displaySlots.observe(viewLifecycleOwner) { displaySlots ->
+            renderTimetable(displaySlots ?: emptyList())
         }
 
         viewModel.errorMessage.observe(viewLifecycleOwner) { msg ->
@@ -86,6 +87,86 @@ class HomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         viewModel.refreshUiState()
+    }
+
+    /**
+     * Groups timetable slots by day/date and renders interactive Day Chips + Slots list.
+     */
+    private fun renderTimetable(slots: List<DisplaySlot>) {
+        if (slots.isEmpty()) {
+            binding.layoutEmptyTimetable.visibility = View.VISIBLE
+            binding.rvTimetableSlots.visibility = View.GONE
+            binding.scrollDayChips.visibility = View.GONE
+            binding.layoutLegend.visibility = View.GONE
+            binding.tvClassCount.text = "0 classes"
+            adapter.submitList(emptyList())
+            return
+        }
+
+        binding.layoutEmptyTimetable.visibility = View.GONE
+        binding.rvTimetableSlots.visibility = View.VISIBLE
+        binding.scrollDayChips.visibility = View.VISIBLE
+        binding.layoutLegend.visibility = View.VISIBLE
+        binding.tvClassCount.text = "${slots.size} classes this week"
+
+        // Group slots by Date (e.g. "20-Oct-2026")
+        // Maintain chronological order
+        slotsByDay = slots.groupBy { it.slot.slotDate }
+
+        // Setup Day selector chips
+        val chipGroup = binding.chipGroupDays
+        chipGroup.removeAllViews()
+
+        val sortedDays = slotsByDay.keys.toList()
+
+        sortedDays.forEachIndexed { index, dayKey ->
+            val daySlots = slotsByDay[dayKey] ?: emptyList()
+            val dayName = daySlots.firstOrNull()?.slot?.dayOfWeekDetails?.dayOfWeekName
+                ?: dayKey
+
+            // Short label, e.g. "Mon 20-Oct" or "Tuesday"
+            val chip = Chip(requireContext()).apply {
+                text = "$dayName (${daySlots.size})"
+                isCheckable = true
+                isClickable = true
+                id = View.generateViewId()
+
+                // Highlight chip if day contains any changed classes
+                val hasChangesOnDay = daySlots.any { it.changeStatus != com.timetabletracker.data.api.models.SlotChangeStatus.UNCHANGED }
+                if (hasChangesOnDay) {
+                    setChipStrokeColorResource(R.color.change_rescheduled_border)
+                    chipStrokeWidth = 3f
+                }
+
+                setOnClickListener {
+                    selectedDayKey = dayKey
+                    updateSlotsForSelectedDay(dayKey)
+                }
+            }
+
+            chipGroup.addView(chip)
+
+            // Auto-select first day or keep previous selection
+            if (selectedDayKey == null && index == 0) {
+                selectedDayKey = dayKey
+                chip.isChecked = true
+            } else if (selectedDayKey == dayKey) {
+                chip.isChecked = true
+            }
+        }
+
+        // Show slots for selected day
+        val activeDay = selectedDayKey ?: sortedDays.firstOrNull()
+        if (activeDay != null) {
+            updateSlotsForSelectedDay(activeDay)
+        }
+    }
+
+    private fun updateSlotsForSelectedDay(dayKey: String) {
+        val slots = slotsByDay[dayKey] ?: emptyList()
+        // Sort slots chronologically by start time
+        val sorted = slots.sortedBy { it.slot.slotStartTime }
+        adapter.submitList(sorted)
     }
 
     private fun updateStatusBadge(status: AppStatus) {

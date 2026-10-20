@@ -12,15 +12,10 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/historyFragment"
-        android:name="com.timetabletracker.ui.fragments.HistoryFragment"
-        android:label="@string/nav_history"
-        tools:layout="@layout/fragment_history" />
-
-    <fragment
         android:id="@+id/settingsFragment"
         android:name="com.timetabletracker.ui.fragments.SettingsFragment"
         android:label="@string/nav_settings"
         tools:layout="@layout/fragment_settings" />
 
 </navigation>
+

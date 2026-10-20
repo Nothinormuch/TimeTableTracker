@@ -25,7 +25,6 @@ class PreferencesManager(context: Context) {
         const val KEY_CHECK_HOUR = "check_hour"
         const val KEY_CHECK_MINUTE = "check_minute"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
-        const val KEY_WHATSAPP_ENABLED = "whatsapp_enabled"
         const val KEY_LAST_CHECK_TIME = "last_check_time"
         const val KEY_IS_MONITORING_ACTIVE = "is_monitoring_active"
 
@@ -84,10 +83,6 @@ class PreferencesManager(context: Context) {
     var notificationsEnabled: Boolean
         get() = plainPrefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true)
         set(value) = plainPrefs.edit().putBoolean(KEY_NOTIFICATIONS_ENABLED, value).apply()
-
-    var whatsappEnabled: Boolean
-        get() = plainPrefs.getBoolean(KEY_WHATSAPP_ENABLED, false)
-        set(value) = plainPrefs.edit().putBoolean(KEY_WHATSAPP_ENABLED, value).apply()
 
     var lastCheckTime: String
         get() = plainPrefs.getString(KEY_LAST_CHECK_TIME, "") ?: ""

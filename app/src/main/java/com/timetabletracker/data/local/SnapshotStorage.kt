@@ -4,33 +4,25 @@ import android.content.Context
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import com.timetabletracker.data.api.models.DisplaySlot
 import com.timetabletracker.data.api.models.TimetableSlot
 import java.io.File
-import java.io.Serializable
 
 /**
- * Represents a past timetable change check event, stored in history.json.
- */
-data class ChangeEvent(
-    val id: Long = System.currentTimeMillis(),
-    val checkTime: String = "",
-    val summary: String = "",
-    val hasChanges: Boolean = false,
-    val changeDetails: String = ""
-) : Serializable
-
-/**
- * Handles persistent storage of timetable snapshots and change history.
- * Snapshots are stored as individual JSON files in filesDir/snapshots/.
- * History is stored as filesDir/history.json (max 50 entries).
+ * Handles persistent storage of timetable snapshots.
+ *
+ * Requirements:
+ * - At any instance, we only store the timetable from the previous check.
+ * - As soon as changes are detected, we note the changes, keep the new timetable,
+ *   and remove the old one.
+ * - Stores display slots (with change highlights: added, deleted, rescheduled).
  */
 class SnapshotStorage(private val context: Context) {
 
     companion object {
         private const val SNAPSHOT_DIR = "snapshots"
-        private const val HISTORY_FILE = "history.json"
-        private const val CURRENT_SNAPSHOT_FILE = "current_snapshot.json"
-        private const val MAX_HISTORY_ENTRIES = 50
+        private const val TIMETABLE_SNAPSHOT_FILE = "timetable_snapshot.json"
+        private const val DISPLAY_SLOTS_FILE = "display_slots.json"
     }
 
     private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
@@ -38,72 +30,64 @@ class SnapshotStorage(private val context: Context) {
     private val snapshotDir: File
         get() = File(context.filesDir, SNAPSHOT_DIR).also { it.mkdirs() }
 
-    private val historyFile: File
-        get() = File(context.filesDir, HISTORY_FILE)
+    private val snapshotFile: File
+        get() = File(snapshotDir, TIMETABLE_SNAPSHOT_FILE)
 
-    // ─── Snapshots ───────────────────────────────────────────────────────────
+    private val displaySlotsFile: File
+        get() = File(snapshotDir, DISPLAY_SLOTS_FILE)
 
-    /**
-     * Saves the current week's timetable slots as the latest snapshot.
-     */
-    fun saveSnapshot(slots: List<TimetableSlot>) {
-        val file = File(snapshotDir, CURRENT_SNAPSHOT_FILE)
-        file.writeText(gson.toJson(slots))
-    }
+    // ─── Raw Timetable Snapshot (previous check's timetable) ──────────────────
 
     /**
-     * Loads the previous snapshot, or null if none exists.
+     * Loads the stored timetable from the previous check, or null if none exists.
      */
     fun loadPreviousSnapshot(): List<TimetableSlot>? {
-        val file = File(snapshotDir, CURRENT_SNAPSHOT_FILE)
-        if (!file.exists()) return null
+        if (!snapshotFile.exists()) return null
         return try {
             val type = object : TypeToken<List<TimetableSlot>>() {}.type
-            gson.fromJson(file.readText(), type)
+            gson.fromJson(snapshotFile.readText(), type)
         } catch (e: Exception) {
             null
         }
     }
 
     /**
-     * Deletes all stored snapshots.
+     * Overwrites the stored timetable snapshot with the newly fetched timetable.
+     * This ensures the old timetable is discarded and only the current one is kept.
      */
-    fun clearSnapshots() {
-        snapshotDir.listFiles()?.forEach { it.delete() }
+    fun saveSnapshot(slots: List<TimetableSlot>) {
+        snapshotFile.writeText(gson.toJson(slots))
     }
 
-    // ─── History ─────────────────────────────────────────────────────────────
+    // ─── Display Slots (current view including change highlights) ─────────────
 
     /**
-     * Appends a new change event to the history log.
-     * Trims the list to MAX_HISTORY_ENTRIES.
+     * Saves the annotated display slots (including added, deleted, and rescheduled flags).
      */
-    fun appendHistory(event: ChangeEvent) {
-        val history = loadHistory().toMutableList()
-        history.add(0, event) // newest first
-        if (history.size > MAX_HISTORY_ENTRIES) {
-            history.subList(MAX_HISTORY_ENTRIES, history.size).clear()
+    fun saveDisplaySlots(displaySlots: List<DisplaySlot>) {
+        displaySlotsFile.writeText(gson.toJson(displaySlots))
+    }
+
+    /**
+     * Loads the annotated display slots for UI presentation.
+     */
+    fun loadDisplaySlots(): List<DisplaySlot> {
+        if (!displaySlotsFile.exists()) {
+            // Fallback: if no annotated display slots exist, load raw snapshot as unchanged
+            return loadPreviousSnapshot()?.map { DisplaySlot(it) } ?: emptyList()
         }
-        historyFile.writeText(gson.toJson(history))
-    }
-
-    /**
-     * Loads all stored change events.
-     */
-    fun loadHistory(): List<ChangeEvent> {
-        if (!historyFile.exists()) return emptyList()
         return try {
-            val type = object : TypeToken<List<ChangeEvent>>() {}.type
-            gson.fromJson(historyFile.readText(), type) ?: emptyList()
+            val type = object : TypeToken<List<DisplaySlot>>() {}.type
+            gson.fromJson(displaySlotsFile.readText(), type) ?: emptyList()
         } catch (e: Exception) {
             emptyList()
         }
     }
 
     /**
-     * Deletes the history log.
+     * Clears all stored timetable files.
      */
-    fun clearHistory() {
-        historyFile.delete()
+    fun clearSnapshots() {
+        snapshotDir.listFiles()?.forEach { it.delete() }
     }
 }

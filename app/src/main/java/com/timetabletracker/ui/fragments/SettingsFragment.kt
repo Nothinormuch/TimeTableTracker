@@ -35,7 +35,6 @@ class SettingsFragment : Fragment() {
 
         // Populate current settings
         binding.switchNotifications.isChecked = viewModel.isNotificationsEnabled()
-        binding.switchWhatsapp.isChecked = viewModel.isWhatsappEnabled()
         updateCheckTimeDisplay(viewModel.getCheckHour(), viewModel.getCheckMinute())
         binding.tvAppVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
 
@@ -85,15 +84,9 @@ class SettingsFragment : Fragment() {
             viewModel.saveNotificationsEnabled(isChecked)
         }
 
-        // WhatsApp toggle
-        binding.switchWhatsapp.setOnCheckedChangeListener { _, isChecked ->
-            viewModel.saveWhatsappEnabled(isChecked)
-        }
-
         // Save settings button
         binding.btnSave.setOnClickListener {
             viewModel.saveNotificationsEnabled(binding.switchNotifications.isChecked)
-            viewModel.saveWhatsappEnabled(binding.switchWhatsapp.isChecked)
             if (!AlarmScheduler.canScheduleExactAlarms(requireContext())) {
                 Snackbar.make(
                     binding.root,

@@ -35,4 +35,20 @@
     <color name="status_changes">#E65100</color>
     <color name="status_error">#B71C1C</color>
     <color name="status_idle">#78909C</color>
+
+    <!-- Timetable Change Highlight Colors -->
+    <!-- Green for added classes -->
+    <color name="change_added_border">#2E7D32</color>
+    <color name="change_added_bg">#142E7D32</color>
+    <color name="change_added_badge">#2E7D32</color>
+
+    <!-- Red for deleted/cancelled classes -->
+    <color name="change_deleted_border">#D32F2F</color>
+    <color name="change_deleted_bg">#14D32F2F</color>
+    <color name="change_deleted_badge">#D32F2F</color>
+
+    <!-- Muted orange for rescheduled/modified classes -->
+    <color name="change_rescheduled_border">#E65100</color>
+    <color name="change_rescheduled_bg">#14E65100</color>
+    <color name="change_rescheduled_badge">#E65100</color>
 </resources>

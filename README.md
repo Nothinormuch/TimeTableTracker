@@ -7,8 +7,20 @@ A native Android app (Kotlin) that monitors the UPES student portal for timetabl
 Instead of using foreground services or holding CPU wake locks, it uses Android's `AlarmManager.setExactAndAllowWhileIdle()` to wake up only at your chosen schedule (e.g. once a day at 8:00 AM).
 - **Between alarms:** The app process is 100% dead. Zero CPU usage, zero RAM, zero battery drain.
 - **When alarm fires:** Android awakens a `BroadcastReceiver` briefly (~10s) which dispatches a one-shot `WorkManager` job to fetch and compare the timetable.
-- **After check:** Snapshots and history are updated, notifications/WhatsApp intents are fired if changes are detected, the next alarm is queued with the OS, and the app process dies immediately.
+- **After check:** New timetable snapshot replaces the old one, change highlights are saved, system notifications are fired if changes are detected, the next alarm is queued with the OS, and the app process dies immediately.
 - **Reboot survival:** A `BOOT_COMPLETED` receiver re-registers your exact alarm after device reboot.
+
+---
+
+## 📅 In-App Tabular Timetable & Visual Change Diffing
+
+The home screen displays your weekly timetable grouped day-by-day with interactive chips and rich slot cards:
+- **Highlighted Borders for Changes:**
+  - 🟢 **Green Border:** Added classes.
+  - 🔴 **Red Border:** Deleted or removed classes (retained from the previous timetable with strike-through styling for immediate clarity).
+  - 🟠 **Muted-Orange Border:** Rescheduled or modified classes (room, time, instructor changes).
+- **Interactive:** Tap any class card to view full slot details (subject, faculty, room, venue type, and meeting links).
+- **Single Snapshot Storage:** At any instance, only the timetable from the previous check is kept on disk. When changes are discovered, the changes are annotated and the previous timetable is overwritten with the fresh one.
 
 ---
 
@@ -64,12 +76,11 @@ If building on a headless server or without Android Studio:
    ```properties
    sdk.dir=/path/to/your/Android/Sdk
    ```
-   *(e.g., `sdk.dir=/home/username/Android/Sdk` on Linux or `sdk.dir=C:\\Users\\username\\AppData\\Local\\Android\\Sdk` on Windows)*
 
 #### Option B: Using Android Studio
 1. Open Android Studio and choose **Open Project**.
 2. Select the `TimeTableTracker` folder.
-3. Android Studio will automatically read `settings.gradle.kts` and prompt to install any missing SDK platforms (`platforms;android-35`) or build-tools.
+3. Android Studio will automatically read `settings.gradle.kts` and sync all dependencies.
 
 ### 4. Build the APK
 
@@ -106,14 +117,14 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 2. **Notifications:**
    Allow notification permissions when the app launches (Android 13+).
 3. **Battery Optimization:**
-   Go to `Settings > Apps > TimetableTracker > App battery usage` and select **Unrestricted**. This prevents aggressive OEM task killers (such as Nothing OS / MIUI) from killing the worker before the network request finishes.
+   Go to `Settings > Apps > TimetableTracker > App battery usage` and select **Unrestricted**.
 
 ### 3. Usage Flow
 1. Open the app and head to the **Settings** tab.
 2. Enter your UPES student email and password, then tap **Login & Verify**.
 3. Select your preferred daily check time (default is 8:00 AM) and tap **Save Settings**.
 4. Go to the **Home** tab and tap **Check Now** to run an immediate baseline check.
-5. Review the **History** tab for past snapshots and diff logs.
+5. View your timetable organized day-by-day. Any changes from the previous check will be immediately highlighted with color-coded borders.
 
 ---
 
@@ -147,14 +158,14 @@ TimeTableTracker/
 │   │   ├── java/com/timetabletracker/
 │   │   │   ├── MainActivity.kt    # Root single activity with bottom navigation
 │   │   │   ├── data/
-│   │   │   │   ├── api/           # Retrofit service, client & models
+│   │   │   │   ├── api/           # Retrofit service, client & models (DisplaySlot, etc.)
 │   │   │   │   ├── local/         # EncryptedSharedPreferences & snapshot storage
 │   │   │   │   └── repository/    # 3-step auth & timetable fetch repository
-│   │   │   ├── domain/            # Timetable diffing & comparison engine
+│   │   │   ├── domain/            # Timetable diffing & visual change highlighter
 │   │   │   ├── scheduler/         # AlarmManager & boot receivers
 │   │   │   ├── worker/            # WorkManager CoroutineWorker for portal fetch
-│   │   │   ├── notification/      # System notifications & WhatsApp intent
-│   │   │   └── ui/                # ViewModel, adapters & fragments
+│   │   │   ├── notification/      # System notifications
+│   │   │   └── ui/                # ViewModel, adapters & fragments (Home, Settings)
 │   │   └── res/                   # Layouts, vector drawables, Material 3 themes
 ├── gradle/
 │   ├── libs.versions.toml         # Version catalog

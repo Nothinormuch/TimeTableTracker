@@ -5,11 +5,10 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
-import com.timetabletracker.data.local.ChangeEvent
 import com.timetabletracker.data.local.PreferencesManager
 import com.timetabletracker.data.local.SnapshotStorage
-import com.timetabletracker.data.repository.Result
 import com.timetabletracker.data.repository.TimetableRepository
 import com.timetabletracker.domain.TimetableComparator
 import com.timetabletracker.notification.NotificationHelper
@@ -19,8 +18,15 @@ import java.util.Locale
 
 /**
  * WorkManager CoroutineWorker that performs the actual timetable check.
- * Enqueued by AlarmReceiver on each scheduled alarm.
- * Supports up to 3 retries (15 min apart) on network/API failure.
+ * Enqueued by AlarmReceiver on each scheduled alarm or triggered manually.
+ *
+ * Flow:
+ * 1. Load previous snapshot (the timetable from the previous check).
+ * 2. Fetch current timetable from UPES API.
+ * 3. Compare current vs previous to determine added, deleted, and rescheduled slots.
+ * 4. Save annotated display slots (with change highlight flags).
+ * 5. Save current timetable snapshot (replacing previous timetable).
+ * 6. Send system notification if changes detected.
  */
 class TimetableFetchWorker(
     private val context: Context,
@@ -44,7 +50,7 @@ class TimetableFetchWorker(
         // 1. Check network connectivity
         if (!isNetworkAvailable()) {
             Log.w(TAG, "No network available — aborting silently")
-            return Result.success() // Don't retry — will run at next alarm
+            return Result.success()
         }
 
         // 2. Check if credentials are saved
@@ -57,7 +63,7 @@ class TimetableFetchWorker(
             return Result.success()
         }
 
-        // 3. Fetch timetable
+        // 3. Fetch timetable from UPES portal
         val fetchResult = repository.fetchTimetableFull()
 
         if (fetchResult is com.timetabletracker.data.repository.Result.Error) {
@@ -67,33 +73,26 @@ class TimetableFetchWorker(
 
         val currentSlots = (fetchResult as com.timetabletracker.data.repository.Result.Success).data
 
-        // 4. Compare with previous snapshot
+        // 4. Load previous snapshot (only the timetable from the previous check)
         val previousSlots = snapshotStorage.loadPreviousSnapshot() ?: emptyList()
+
+        // 5. Compare and flag changes (Green = Added, Red = Deleted, Muted-Orange = Rescheduled)
         val comparisonResult = TimetableComparator.compare(previousSlots, currentSlots)
 
-        // 5. Save new snapshot
+        // 6. Save annotated display slots so the Home tab can render the highlighted table
+        snapshotStorage.saveDisplaySlots(comparisonResult.displaySlots)
+
+        // 7. Save current timetable snapshot (replaces previous timetable)
         snapshotStorage.saveSnapshot(currentSlots)
 
-        // 6. Update last check time
+        // 8. Update last check time
         val nowStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
         prefsManager.lastCheckTime = nowStr
 
-        // 7. Record history event
-        val event = ChangeEvent(
-            checkTime = nowStr,
-            summary = if (comparisonResult.hasChanges) comparisonResult.summary else "No changes detected.",
-            hasChanges = comparisonResult.hasChanges,
-            changeDetails = comparisonResult.summary
-        )
-        snapshotStorage.appendHistory(event)
-
-        // 8. Notify if changes found
+        // 9. Send system notification if changes were detected
         if (comparisonResult.hasChanges) {
             if (prefsManager.notificationsEnabled) {
                 NotificationHelper.notifyChanges(context, comparisonResult.summary)
-            }
-            if (prefsManager.whatsappEnabled) {
-                NotificationHelper.sendWhatsAppMessage(context, comparisonResult.summary)
             }
             Log.i(TAG, "Changes detected and notification sent")
         } else {
@@ -104,7 +103,7 @@ class TimetableFetchWorker(
     }
 
     /**
-     * Handles fetch errors by retrying up to MAX_RETRIES times (every 15 min).
+     * Handles fetch errors with retries.
      */
     private fun handleFetchError(errorMessage: String): Result {
         val isAuthError = errorMessage.contains("401") ||

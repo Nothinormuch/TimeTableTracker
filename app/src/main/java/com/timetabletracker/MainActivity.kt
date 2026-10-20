@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
         navController = navHostFragment.navController
 
         val appBarConfig = AppBarConfiguration(
-            setOf(R.id.homeFragment, R.id.settingsFragment, R.id.historyFragment)
+            setOf(R.id.homeFragment, R.id.settingsFragment)
         )
         setSupportActionBar(binding.toolbar)
         setupActionBarWithNavController(navController, appBarConfig)

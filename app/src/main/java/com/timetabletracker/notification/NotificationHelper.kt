@@ -103,19 +103,4 @@ object NotificationHelper {
 
         nm.notify(NOTIFICATION_ID_ALERT, notification)
     }
-
-    /**
-     * Opens WhatsApp with a pre-filled self-message (no phone number).
-     */
-    fun sendWhatsAppMessage(context: Context, message: String) {
-        val encodedMessage = Uri.encode(message)
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://wa.me/?text=$encodedMessage")).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        try {
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            // WhatsApp not installed — ignore silently
-        }
-    }
 }

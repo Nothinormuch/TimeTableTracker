@@ -1,108 +1,157 @@
 package com.timetabletracker.domain
 
+import com.timetabletracker.data.api.models.DisplaySlot
+import com.timetabletracker.data.api.models.SlotChangeStatus
 import com.timetabletracker.data.api.models.TimetableSlot
 
 /**
- * Describes a single detected change in the timetable.
+ * Result of comparing the previous timetable snapshot against the current one.
+ * Contains:
+ * - [displaySlots]: combined list to show in the UI, containing:
+ *     - Current slots (marked UNCHANGED, ADDED, or RESCHEDULED)
+ *     - Deleted slots from previous check (marked DELETED with red border)
+ * - [hasChanges]: true if any additions, removals, or reschedules occurred
+ * - [summary]: human-readable description for system notification
  */
-data class TimetableChange(
-    val type: ChangeType,
-    val key: String,
-    val description: String
+data class ComparisonResult(
+    val displaySlots: List<DisplaySlot>,
+    val hasChanges: Boolean,
+    val summary: String
 )
 
-enum class ChangeType {
-    ADDED, REMOVED, MODIFIED
-}
-
 /**
- * Compares two lists of TimetableSlots and produces a human-readable change report.
- *
- * Slot key: SlotDate + "_" + SlotStartTime + "_" + ModuleCode
+ * Compares [previousSlots] against [currentSlots].
+ * Highlights:
+ * - Green border for ADDED classes
+ * - Red border for DELETED classes (retained from old timetable for visual clarity)
+ * - Muted-orange border for RESCHEDULED or MODIFIED classes
  */
 object TimetableComparator {
 
-    /**
-     * Compares [previousSlots] against [currentSlots] and returns
-     * a list of detected changes plus a formatted summary string.
-     */
     fun compare(
         previousSlots: List<TimetableSlot>,
         currentSlots: List<TimetableSlot>
     ): ComparisonResult {
+        // If this is the very first check, all current slots are considered current/unchanged
+        if (previousSlots.isEmpty()) {
+            val displayList = currentSlots.map { DisplaySlot(slot = it, changeStatus = SlotChangeStatus.UNCHANGED) }
+            return ComparisonResult(
+                displaySlots = displayList,
+                hasChanges = false,
+                summary = "Initial timetable baseline established."
+            )
+        }
+
         val previousMap = previousSlots.associateBy { it.toKey() }
         val currentMap = currentSlots.associateBy { it.toKey() }
 
-        val changes = mutableListOf<TimetableChange>()
+        val displayList = mutableListOf<DisplaySlot>()
+        val changeDescriptions = mutableListOf<String>()
 
-        // Detect removed slots
-        previousMap.forEach { (key, slot) ->
+        var addedCount = 0
+        var deletedCount = 0
+        var modifiedCount = 0
+
+        // 1. Process all current slots
+        currentSlots.forEach { curr ->
+            val key = curr.toKey()
+            val prev = previousMap[key]
+
+            if (prev == null) {
+                // Class was ADDED
+                addedCount++
+                val desc = "✅ Added: ${curr.moduleName()} on ${curr.slotDate} at ${curr.slotStartTime}"
+                changeDescriptions.add(desc)
+                displayList.add(
+                    DisplaySlot(
+                        slot = curr,
+                        changeStatus = SlotChangeStatus.ADDED,
+                        changeDetail = "Added class"
+                    )
+                )
+            } else {
+                // Check if rescheduled / modified
+                val mods = mutableListOf<String>()
+                if (prev.slotEndTime != curr.slotEndTime) {
+                    mods.add("Time: ${curr.slotStartTime} - ${curr.slotEndTime}")
+                }
+                val prevVenue = prev.floorPlanDetails?.venueName ?: ""
+                val currVenue = curr.floorPlanDetails?.venueName ?: ""
+                if (prevVenue != currVenue) {
+                    mods.add("Venue: $currVenue")
+                }
+                val prevTeacher = prev.teacherList?.joinToString { it.name } ?: ""
+                val currTeacher = curr.teacherList?.joinToString { it.name } ?: ""
+                if (prevTeacher != currTeacher) {
+                    mods.add("Faculty: $currTeacher")
+                }
+                if (prev.isCancelledSlot != curr.isCancelledSlot) {
+                    mods.add(if (curr.isCancelledSlot) "Cancelled" else "Un-cancelled")
+                }
+                if (prev.isRescheduledSlot != curr.isRescheduledSlot) {
+                    mods.add(if (curr.isRescheduledSlot) "Rescheduled" else "Reschedule reversed")
+                }
+
+                if (mods.isNotEmpty() || curr.isRescheduledSlot || curr.isCancelledSlot) {
+                    modifiedCount++
+                    val detail = mods.joinToString(", ")
+                    changeDescriptions.add("✏️ Rescheduled/Modified: ${curr.moduleName()} (${detail})")
+                    displayList.add(
+                        DisplaySlot(
+                            slot = curr,
+                            changeStatus = SlotChangeStatus.RESCHEDULED,
+                            changeDetail = detail.ifBlank { "Rescheduled" }
+                        )
+                    )
+                } else {
+                    // Unchanged
+                    displayList.add(
+                        DisplaySlot(
+                            slot = curr,
+                            changeStatus = SlotChangeStatus.UNCHANGED
+                        )
+                    )
+                }
+            }
+        }
+
+        // 2. Add DELETED slots from previous check (so they can be highlighted in red)
+        previousSlots.forEach { prev ->
+            val key = prev.toKey()
             if (!currentMap.containsKey(key)) {
-                changes.add(
-                    TimetableChange(
-                        type = ChangeType.REMOVED,
-                        key = key,
-                        description = "❌ REMOVED: ${slot.moduleName()} on ${slot.slotDate} at ${slot.slotStartTime}"
+                deletedCount++
+                val desc = "❌ Removed: ${prev.moduleName()} on ${prev.slotDate} at ${prev.slotStartTime}"
+                changeDescriptions.add(desc)
+                displayList.add(
+                    DisplaySlot(
+                        slot = prev,
+                        changeStatus = SlotChangeStatus.DELETED,
+                        changeDetail = "Class removed/cancelled"
                     )
                 )
             }
         }
 
-        // Detect added slots
-        currentMap.forEach { (key, slot) ->
-            if (!previousMap.containsKey(key)) {
-                changes.add(
-                    TimetableChange(
-                        type = ChangeType.ADDED,
-                        key = key,
-                        description = "✅ ADDED: ${slot.moduleName()} on ${slot.slotDate} at ${slot.slotStartTime} " +
-                                "in ${slot.floorPlanDetails?.venueName ?: "TBD"}"
-                    )
-                )
+        val hasChanges = addedCount > 0 || deletedCount > 0 || modifiedCount > 0
+
+        val summary = if (hasChanges) {
+            buildString {
+                append("🔔 Timetable Changes Detected!\n")
+                if (addedCount > 0) append("• $addedCount class(es) added\n")
+                if (deletedCount > 0) append("• $deletedCount class(es) removed\n")
+                if (modifiedCount > 0) append("• $modifiedCount class(es) rescheduled/modified\n")
+                append("\n")
+                append(changeDescriptions.take(5).joinToString("\n"))
             }
+        } else {
+            "No changes detected."
         }
 
-        // Detect modifications on matching keys
-        previousMap.forEach { (key, prev) ->
-            val curr = currentMap[key] ?: return@forEach
-            val modificationDetails = mutableListOf<String>()
-
-            if (prev.slotEndTime != curr.slotEndTime) {
-                modificationDetails.add("End time: ${prev.slotEndTime} → ${curr.slotEndTime}")
-            }
-            val prevVenue = prev.floorPlanDetails?.venueName ?: ""
-            val currVenue = curr.floorPlanDetails?.venueName ?: ""
-            if (prevVenue != currVenue) {
-                modificationDetails.add("Venue: $prevVenue → $currVenue")
-            }
-            val prevTeacher = prev.teacherList?.joinToString { it.name } ?: ""
-            val currTeacher = curr.teacherList?.joinToString { it.name } ?: ""
-            if (prevTeacher != currTeacher) {
-                modificationDetails.add("Instructor: $prevTeacher → $currTeacher")
-            }
-            if (prev.isCancelledSlot != curr.isCancelledSlot) {
-                val status = if (curr.isCancelledSlot) "now CANCELLED" else "cancellation REVERSED"
-                modificationDetails.add("Status: $status")
-            }
-            if (prev.isRescheduledSlot != curr.isRescheduledSlot) {
-                val status = if (curr.isRescheduledSlot) "now RESCHEDULED" else "reschedule REVERSED"
-                modificationDetails.add("Status: $status")
-            }
-
-            if (modificationDetails.isNotEmpty()) {
-                changes.add(
-                    TimetableChange(
-                        type = ChangeType.MODIFIED,
-                        key = key,
-                        description = "✏️ MODIFIED: ${prev.moduleName()} on ${prev.slotDate} at ${prev.slotStartTime}\n" +
-                                modificationDetails.joinToString("\n  • ", prefix = "  • ")
-                    )
-                )
-            }
-        }
-
-        val summary = buildSummary(changes)
-        return ComparisonResult(changes = changes, summary = summary)
+        return ComparisonResult(
+            displaySlots = displayList,
+            hasChanges = hasChanges,
+            summary = summary
+        )
     }
 
     private fun TimetableSlot.toKey(): String {
@@ -112,28 +161,4 @@ object TimetableComparator {
 
     private fun TimetableSlot.moduleName(): String =
         moduleList?.firstOrNull()?.let { "${it.moduleName} (${it.moduleCode})" } ?: "Unknown Module"
-
-    private fun buildSummary(changes: List<TimetableChange>): String {
-        if (changes.isEmpty()) return "No changes detected."
-        val added = changes.count { it.type == ChangeType.ADDED }
-        val removed = changes.count { it.type == ChangeType.REMOVED }
-        val modified = changes.count { it.type == ChangeType.MODIFIED }
-
-        val header = buildString {
-            append("🔔 Timetable Changes Detected!\n")
-            if (added > 0) append("• $added class(es) added\n")
-            if (removed > 0) append("• $removed class(es) removed\n")
-            if (modified > 0) append("• $modified class(es) modified\n")
-            append("\nDetails:\n")
-        }
-        val details = changes.joinToString("\n\n") { it.description }
-        return header + details
-    }
-}
-
-data class ComparisonResult(
-    val changes: List<TimetableChange>,
-    val summary: String
-) {
-    val hasChanges: Boolean get() = changes.isNotEmpty()
 }

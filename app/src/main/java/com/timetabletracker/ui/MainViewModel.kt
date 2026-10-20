@@ -11,7 +11,7 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.timetabletracker.data.local.ChangeEvent
+import com.timetabletracker.data.api.models.DisplaySlot
 import com.timetabletracker.data.local.PreferencesManager
 import com.timetabletracker.data.local.SnapshotStorage
 import com.timetabletracker.data.repository.Result
@@ -47,8 +47,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val _status = MutableLiveData<AppStatus>(AppStatus.IDLE)
     val status: LiveData<AppStatus> = _status
 
-    private val _changeHistory = MutableLiveData<List<ChangeEvent>>()
-    val changeHistory: LiveData<List<ChangeEvent>> = _changeHistory
+    private val _displaySlots = MutableLiveData<List<DisplaySlot>>()
+    val displaySlots: LiveData<List<DisplaySlot>> = _displaySlots
 
     private val _isLoggedIn = MutableLiveData<Boolean>()
     val isLoggedIn: LiveData<Boolean> = _isLoggedIn
@@ -72,7 +72,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _lastCheckTime.value = prefsManager.lastCheckTime.ifBlank { "Not checked yet" }
         _nextCheckTime.value = AlarmScheduler.getNextAlarmTimeString(context)
         _isLoggedIn.value = prefsManager.isLoggedIn()
-        _changeHistory.value = snapshotStorage.loadHistory()
+        _displaySlots.value = snapshotStorage.loadDisplaySlots()
     }
 
     /**
@@ -106,14 +106,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 when {
                     info.state.isFinished -> {
                         refreshUiState()
-                        val history = snapshotStorage.loadHistory()
-                        _changeHistory.value = history
-                        val latestEvent = history.firstOrNull()
-                        _status.value = when {
-                            latestEvent == null -> AppStatus.IDLE
-                            latestEvent.hasChanges -> AppStatus.CHANGES_FOUND
-                            else -> AppStatus.NO_CHANGES
-                        }
+                        val slots = snapshotStorage.loadDisplaySlots()
+                        _displaySlots.value = slots
+                        val hasChanges = slots.any { it.changeStatus != com.timetabletracker.data.api.models.SlotChangeStatus.UNCHANGED }
+                        _status.value = if (hasChanges) AppStatus.CHANGES_FOUND else AppStatus.NO_CHANGES
                     }
                 }
             }
@@ -126,7 +122,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefsManager.userId = email
         prefsManager.password = password
         prefsManager.clearTokens()
-        prefsManager.studentId = "" // Force re-fetch
+        prefsManager.studentId = ""
 
         _loginStatus.value = "Verifying credentials…"
 
@@ -162,13 +158,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         prefsManager.notificationsEnabled = enabled
     }
 
-    fun saveWhatsappEnabled(enabled: Boolean) {
-        prefsManager.whatsappEnabled = enabled
-    }
-
     fun getCheckHour(): Int = prefsManager.checkHour
     fun getCheckMinute(): Int = prefsManager.checkMinute
     fun isNotificationsEnabled(): Boolean = prefsManager.notificationsEnabled
-    fun isWhatsappEnabled(): Boolean = prefsManager.whatsappEnabled
     fun clearErrorMessage() { _errorMessage.value = null }
 }

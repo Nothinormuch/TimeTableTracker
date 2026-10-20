@@ -4,14 +4,18 @@
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
-    <string name="nav_history">History</string>
     <string name="nav_settings">Settings</string>
 
     <!-- Home Fragment -->
     <string name="last_checked">Last checked: %1$s</string>
     <string name="next_check">Next check: %1$s</string>
     <string name="check_now">Check Now</string>
-    <string name="no_activity">No activity recorded yet.</string>
+    <string name="timetable_section">Weekly Timetable</string>
+    <string name="no_timetable">No timetable loaded yet.</string>
+    <string name="no_timetable_sub">Tap \"Check Now\" to fetch your schedule from the UPES portal.</string>
+    <string name="changes_legend_added">Added</string>
+    <string name="changes_legend_deleted">Deleted</string>
+    <string name="changes_legend_rescheduled">Rescheduled</string>
 
     <!-- Settings Fragment -->
     <string name="login_section">Login</string>
@@ -23,13 +27,8 @@
     <string name="check_time_format">%1$d:%2$s %3$s</string>
     <string name="notifications_section">Notifications</string>
     <string name="enable_notifications">System Notifications</string>
-    <string name="enable_whatsapp">WhatsApp Self-Message</string>
     <string name="btn_save_settings">Save Settings</string>
     <string name="app_version">Version %1$s</string>
-
-    <!-- History Fragment -->
-    <string name="no_history">No History Yet</string>
-    <string name="no_history_subtitle">Run a check to start tracking timetable changes.</string>
 
     <!-- Notifications -->
     <string name="notif_channel_changes">Timetable Changes</string>
