@@ -97,7 +97,6 @@ class HomeFragment : Fragment() {
             binding.layoutEmptyTimetable.visibility = View.VISIBLE
             binding.rvTimetableSlots.visibility = View.GONE
             binding.scrollDayChips.visibility = View.GONE
-            binding.layoutLegend.visibility = View.GONE
             binding.tvClassCount.text = "0 classes"
             adapter.submitList(emptyList())
             return
@@ -106,7 +105,6 @@ class HomeFragment : Fragment() {
         binding.layoutEmptyTimetable.visibility = View.GONE
         binding.rvTimetableSlots.visibility = View.VISIBLE
         binding.scrollDayChips.visibility = View.VISIBLE
-        binding.layoutLegend.visibility = View.VISIBLE
         binding.tvClassCount.text = "${slots.size} classes this week"
 
         // Group slots by Date (e.g. "20-Oct-2026")
@@ -165,8 +163,24 @@ class HomeFragment : Fragment() {
     private fun updateSlotsForSelectedDay(dayKey: String) {
         val slots = slotsByDay[dayKey] ?: emptyList()
         // Sort slots chronologically by start time
-        val sorted = slots.sortedBy { it.slot.slotStartTime }
+        val sorted = slots.sortedWith(compareBy(
+            { parse24Hour(it.slot.slotStartTime) }
+        ))
         adapter.submitList(sorted)
+    }
+
+    private fun parse24Hour(timeStr: String): Int {
+        if (timeStr.isBlank()) return 0
+        val regex = """(\d{1,2}):(\d{2})\s*(AM|PM)""".toRegex(RegexOption.IGNORE_CASE)
+        val match = regex.find(timeStr.trim()) ?: return 0
+        val (hourStr, minuteStr, amPm) = match.destructured
+        var hour = hourStr.toInt()
+        val minute = minuteStr.toInt()
+        val isPm = amPm.equals("PM", ignoreCase = true)
+        val isAm = amPm.equals("AM", ignoreCase = true)
+        if (isPm && hour != 12) hour += 12
+        if (isAm && hour == 12) hour = 0
+        return hour * 60 + minute
     }
 
     private fun updateStatusBadge(status: AppStatus) {

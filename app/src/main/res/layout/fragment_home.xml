@@ -112,60 +112,6 @@
                     tools:text="12 classes" />
             </LinearLayout>
 
-            <!-- Interactive Legend for Changes -->
-            <LinearLayout
-                android:id="@+id/layout_legend"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="12dp"
-                android:padding="8dp"
-                android:background="@drawable/bg_slot_unchanged">
-
-                <!-- Added legend -->
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:background="@color/change_added_border"
-                    android:layout_marginEnd="6dp" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/changes_legend_added"
-                    android:textAppearance="?attr/textAppearanceLabelSmall" />
-
-                <!-- Deleted legend -->
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:background="@color/change_deleted_border"
-                    android:layout_marginEnd="6dp" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/changes_legend_deleted"
-                    android:textAppearance="?attr/textAppearanceLabelSmall" />
-
-                <!-- Rescheduled legend -->
-                <View
-                    android:layout_width="12dp"
-                    android:layout_height="12dp"
-                    android:background="@color/change_rescheduled_border"
-                    android:layout_marginEnd="6dp" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1.2"
-                    android:text="@string/changes_legend_rescheduled"
-                    android:textAppearance="?attr/textAppearanceLabelSmall" />
-            </LinearLayout>
-
             <!-- Day Selector Tabs (Horizontal Scrolling Chips) -->
             <HorizontalScrollView
                 android:id="@+id/scroll_day_chips"
