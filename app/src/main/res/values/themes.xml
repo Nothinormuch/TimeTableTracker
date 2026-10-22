@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Base app theme -->
     <style name="Theme.TimetableTracker" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Primary brand color (UPES Blue) -->
         <item name="colorPrimary">@color/primary</item>
@@ -12,12 +13,15 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/on_secondary</item>
         <item name="colorSecondaryContainer">@color/secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary_container</item>
 
         <!-- Surface -->
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="colorSurfaceVariant">@color/surface_variant</item>
         <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+        <item name="colorSurfaceContainer">@color/surface_container</item>
+        <item name="colorSurfaceContainerHigh">@color/surface_container_high</item>
 
         <!-- Background -->
         <item name="android:colorBackground">@color/background</item>
@@ -31,10 +35,79 @@
 
         <!-- Outline -->
         <item name="colorOutline">@color/outline</item>
+        <item name="colorOutlineVariant">@color/outline_variant</item>
 
         <!-- System bars -->
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+
+        <!-- Typography family -->
+        <item name="fontFamily">@font/roboto_regular</item>
+    </style>
+
+    <!-- ═══════════ Shared component styles ═══════════ -->
+
+    <!-- Section card used identically on Home and Settings -->
+    <style name="Widget.TimetableTracker.Card.Section" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">1dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLowest</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="contentPadding">20dp</item>
+    </style>
+
+    <!-- Section header inside a card -->
+    <style name="TextAppearance.TimetableTracker.SectionTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textSize">15sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <!-- Screen headline -->
+    <style name="TextAppearance.TimetableTracker.Headline" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">-0.01</item>
+    </style>
+
+    <!-- Primary full-width filled button -->
+    <style name="Widget.TimetableTracker.Button.Primary" parent="Widget.Material3.Button">
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="cornerRadius">14dp</item>
+    </style>
+
+    <!-- Outlined / tonal secondary button -->
+    <style name="Widget.TimetableTracker.Button.Secondary" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="cornerRadius">12dp</item>
+    </style>
+
+    <!-- Status badge (solid, rounded) -->
+    <style name="Widget.TimetableTracker.Badge" parent="">
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelSmall</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/on_status_idle</item>
+        <item name="android:background">@drawable/bg_status_badge</item>
+    </style>
+
+    <!-- Day chip (filter chip look, single-select) -->
+    <style name="Widget.TimetableTracker.Chip.Day" parent="Widget.Material3.Chip.Filter">
+        <item name="chipBackgroundColor">@color/chip_day_bg</item>
+        <item name="android:textColor">@color/chip_day_text</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="chipCornerRadius">20dp</item>
+        <item name="chipMinHeight">36dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="ensureMinTouchTargetSize">false</item>
     </style>
 
 </resources>

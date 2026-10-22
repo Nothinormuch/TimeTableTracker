@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
@@ -38,16 +40,20 @@ class SettingsFragment : Fragment() {
         updateCheckTimeDisplay(viewModel.getCheckHour(), viewModel.getCheckMinute())
         binding.tvAppVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
 
-        // Login status observer
-        viewModel.loginStatus.observe(viewLifecycleOwner) { status ->
-            binding.tvLoginStatus.text = status
-            binding.tvLoginStatus.visibility = if (status.isNullOrBlank()) View.GONE else View.VISIBLE
+        // Login status observer — badge shows signed-in state, detail line shows errors
+        viewModel.isLoggedIn.observe(viewLifecycleOwner) { loggedIn ->
+            if (viewModel.loginStatus.value.isNullOrBlank()) {
+                updateLoginBadge(loggedIn, null)
+            }
         }
 
-        viewModel.isLoggedIn.observe(viewLifecycleOwner) { loggedIn ->
-            val statusText = if (loggedIn) "✅ Logged in" else "Not logged in"
-            if (viewModel.loginStatus.value.isNullOrBlank()) {
-                binding.tvLoginStatus.text = statusText
+        viewModel.loginStatus.observe(viewLifecycleOwner) { status ->
+            if (status.isNullOrBlank()) {
+                binding.tvLoginStatus.visibility = View.GONE
+            } else {
+                binding.tvLoginStatus.visibility = View.VISIBLE
+                binding.tvLoginStatus.text = status
+                updateLoginBadge(viewModel.isLoggedIn.value == true, status)
             }
         }
 
@@ -56,25 +62,39 @@ class SettingsFragment : Fragment() {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString()
             if (email.isBlank() || password.isBlank()) {
-                Snackbar.make(binding.root, "Please enter both email and password.", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, R.string.msg_enter_credentials, Snackbar.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
             viewModel.saveCredentials(email, password)
         }
 
-        // Check time picker
-        binding.btnPickTime.setOnClickListener {
+        // Tap the time row to open the picker
+        binding.layoutPickTime.setOnClickListener {
             val picker = MaterialTimePicker.Builder()
                 .setTimeFormat(TimeFormat.CLOCK_12H)
                 .setHour(viewModel.getCheckHour())
                 .setMinute(viewModel.getCheckMinute())
-                .setTitleText("Select check time")
+                .setTitleText(R.string.check_schedule)
                 .build()
 
             picker.addOnPositiveButtonClickListener {
                 viewModel.saveCheckTime(picker.hour, picker.minute)
                 updateCheckTimeDisplay(picker.hour, picker.minute)
-                Snackbar.make(binding.root, "Check time saved!", Snackbar.LENGTH_SHORT).show()
+                val amPm = if (picker.hour < 12) "AM" else "PM"
+                val displayHour = when {
+                    picker.hour == 0 -> 12
+                    picker.hour > 12 -> picker.hour - 12
+                    else -> picker.hour
+                }
+                Snackbar.make(
+                    binding.root,
+                    getString(
+                        R.string.msg_time_saved,
+                        "$displayHour:${picker.minute.toString().padStart(2, '0')} $amPm"
+                    ),
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
             picker.show(childFragmentManager, "time_picker")
         }
@@ -88,13 +108,25 @@ class SettingsFragment : Fragment() {
         binding.btnSave.setOnClickListener {
             viewModel.saveNotificationsEnabled(binding.switchNotifications.isChecked)
             if (!AlarmScheduler.canScheduleExactAlarms(requireContext())) {
-                Snackbar.make(
-                    binding.root,
-                    "Exact alarm permission not granted. Alarm scheduling may be imprecise.",
-                    Snackbar.LENGTH_LONG
-                ).show()
+                Snackbar.make(binding.root, R.string.msg_alarm_permission, Snackbar.LENGTH_LONG)
+                    .show()
             }
-            Snackbar.make(binding.root, "Settings saved!", Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(binding.root, R.string.msg_settings_saved, Snackbar.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateLoginBadge(loggedIn: Boolean, detail: String?) {
+        val colorRes = if (loggedIn) R.color.status_ok else R.color.status_idle
+        binding.tvLoginState.backgroundTintList =
+            ContextCompat.getColorStateList(requireContext(), colorRes)
+        binding.tvLoginState.text = getString(
+            if (loggedIn) R.string.login_state_in else R.string.login_state_out
+        )
+        // Detail line color: neutral for progress, error-colored for failures
+        if (detail != null) {
+            binding.tvLoginStatus.setTextColor(
+                ContextCompat.getColor(requireContext(), R.color.on_surface_variant)
+            )
         }
     }
 

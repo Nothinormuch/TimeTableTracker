@@ -60,13 +60,13 @@ object TimetableComparator {
             if (prev == null) {
                 // Class was ADDED
                 addedCount++
-                val desc = "✅ Added: ${curr.moduleName()} on ${curr.slotDate} at ${curr.slotStartTime}"
+                val desc = "Added: ${curr.moduleName()} on ${curr.slotDate} at ${curr.slotStartTime}"
                 changeDescriptions.add(desc)
                 displayList.add(
                     DisplaySlot(
                         slot = curr,
                         changeStatus = SlotChangeStatus.ADDED,
-                        changeDetail = "Added class"
+                        changeDetail = "Added to your timetable"
                     )
                 )
             } else {
@@ -78,12 +78,12 @@ object TimetableComparator {
                 val prevVenue = prev.floorPlanDetails?.venueName ?: ""
                 val currVenue = curr.floorPlanDetails?.venueName ?: ""
                 if (prevVenue != currVenue) {
-                    mods.add("Venue: $currVenue")
+                    mods.add("Room ${prevVenue.ifBlank { "?" }} → ${currVenue.ifBlank { "?" }}")
                 }
                 val prevTeacher = prev.teacherList?.joinToString { it.name } ?: ""
                 val currTeacher = curr.teacherList?.joinToString { it.name } ?: ""
                 if (prevTeacher != currTeacher) {
-                    mods.add("Faculty: $currTeacher")
+                    mods.add("Faculty: $prevTeacher → $currTeacher")
                 }
                 if (prev.isCancelledSlot != curr.isCancelledSlot) {
                     mods.add(if (curr.isCancelledSlot) "Cancelled" else "Un-cancelled")
@@ -95,7 +95,7 @@ object TimetableComparator {
                 if (mods.isNotEmpty() || curr.isRescheduledSlot || curr.isCancelledSlot) {
                     modifiedCount++
                     val detail = mods.joinToString(", ")
-                    changeDescriptions.add("✏️ Rescheduled/Modified: ${curr.moduleName()} (${detail})")
+                    changeDescriptions.add("Changed: ${curr.moduleName()} ($detail)")
                     displayList.add(
                         DisplaySlot(
                             slot = curr,
@@ -120,13 +120,13 @@ object TimetableComparator {
             val key = prev.toKey()
             if (!currentMap.containsKey(key)) {
                 deletedCount++
-                val desc = "❌ Removed: ${prev.moduleName()} on ${prev.slotDate} at ${prev.slotStartTime}"
+                val desc = "Removed: ${prev.moduleName()} on ${prev.slotDate} at ${prev.slotStartTime}"
                 changeDescriptions.add(desc)
                 displayList.add(
                     DisplaySlot(
                         slot = prev,
                         changeStatus = SlotChangeStatus.DELETED,
-                        changeDetail = "Class removed/cancelled"
+                        changeDetail = "Removed from your timetable"
                     )
                 )
             }
@@ -136,11 +136,11 @@ object TimetableComparator {
 
         val summary = if (hasChanges) {
             buildString {
-                append("🔔 Timetable Changes Detected!\n")
-                if (addedCount > 0) append("• $addedCount class(es) added\n")
-                if (deletedCount > 0) append("• $deletedCount class(es) removed\n")
-                if (modifiedCount > 0) append("• $modifiedCount class(es) rescheduled/modified\n")
-                append("\n")
+                val parts = mutableListOf<String>()
+                if (addedCount > 0) parts.add("$addedCount added")
+                if (deletedCount > 0) parts.add("$deletedCount removed")
+                if (modifiedCount > 0) parts.add("$modifiedCount changed")
+                append("${parts.joinToString(", ")}.\n")
                 append(changeDescriptions.take(5).joinToString("\n"))
             }
         } else {

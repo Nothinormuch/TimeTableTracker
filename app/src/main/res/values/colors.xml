@@ -1,54 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary UPES Blue -->
+    <!-- ═══ Core palette — UPES blue ═══ -->
     <color name="primary">#006399</color>
     <color name="on_primary">#FFFFFF</color>
     <color name="primary_container">#CCE5FF</color>
     <color name="on_primary_container">#001E30</color>
 
-    <!-- Secondary -->
-    <color name="secondary">#50606E</color>
+    <color name="secondary">#00696B</color>
     <color name="on_secondary">#FFFFFF</color>
-    <color name="secondary_container">#D3E4F5</color>
+    <color name="secondary_container">#9CF1F2</color>
+    <color name="on_secondary_container">#002021</color>
 
-    <!-- Surface -->
-    <color name="surface">#F8FAFE</color>
-    <color name="on_surface">#1A1C1E</color>
+    <!-- ═══ Surfaces ═══ -->
+    <color name="surface">#FBFCFE</color>
+    <color name="surface_container">#F0F3F7</color>
+    <color name="surface_container_high">#E9EDF2</color>
+    <color name="on_surface">#191C1E</color>
+    <color name="on_surface_variant">#42474E</color>
     <color name="surface_variant">#DDE3EA</color>
-    <color name="on_surface_variant">#41484D</color>
 
-    <!-- Background -->
-    <color name="background">#F8FAFE</color>
-    <color name="on_background">#1A1C1E</color>
+    <color name="background">#FBFCFE</color>
+    <color name="on_background">#191C1E</color>
 
-    <!-- Error -->
+    <!-- ═══ Outlines ═══ -->
+    <color name="outline">#72777E</color>
+    <color name="outline_variant">#C2C7CF</color>
+
+    <!-- ═══ Error ═══ -->
     <color name="error">#BA1A1A</color>
     <color name="on_error">#FFFFFF</color>
     <color name="error_container">#FFDAD6</color>
     <color name="on_error_container">#410002</color>
 
-    <!-- Outline -->
-    <color name="outline">#71787E</color>
-
-    <!-- Status colors -->
+    <!-- ═══ Semantic status colors (solid + container pairs) ═══ -->
     <color name="status_ok">#2E7D32</color>
+    <color name="on_status_ok">#FFFFFF</color>
+    <color name="status_ok_container">#D7EFD9</color>
+    <color name="on_status_ok_container">#0C3B10</color>
+
     <color name="status_changes">#E65100</color>
-    <color name="status_error">#B71C1C</color>
-    <color name="status_idle">#78909C</color>
+    <color name="on_status_changes">#FFFFFF</color>
+    <color name="status_changes_container">#FFEAD6</color>
+    <color name="on_status_changes_container">#4A1C00</color>
 
-    <!-- Timetable Change Highlight Colors -->
-    <!-- Green for added classes -->
+    <color name="status_error">#C62828</color>
+    <color name="on_status_error">#FFFFFF</color>
+    <color name="status_error_container">#FFDAD6</color>
+    <color name="on_status_error_container">#410002</color>
+
+    <color name="status_idle">#546E7A</color>
+    <color name="on_status_idle">#FFFFFF</color>
+    <color name="status_idle_container">#E1EAEF</color>
+    <color name="on_status_idle_container">#1A2830</color>
+
+    <!-- ═══ Timetable change highlight colors ═══ -->
+    <!-- Added -->
     <color name="change_added_border">#2E7D32</color>
-    <color name="change_added_bg">#142E7D32</color>
-    <color name="change_added_badge">#2E7D32</color>
-
-    <!-- Red for deleted/cancelled classes -->
-    <color name="change_deleted_border">#D32F2F</color>
-    <color name="change_deleted_bg">#14D32F2F</color>
-    <color name="change_deleted_badge">#D32F2F</color>
-
-    <!-- Muted orange for rescheduled/modified classes -->
+    <color name="change_added_container">#E7F4E7</color>
+    <color name="on_change_added_container">#0C3B10</color>
+    <!-- Deleted -->
+    <color name="change_deleted_border">#C62828</color>
+    <color name="change_deleted_container">#FCE9E9</color>
+    <color name="on_change_deleted_container">#410002</color>
+    <!-- Rescheduled -->
     <color name="change_rescheduled_border">#E65100</color>
-    <color name="change_rescheduled_bg">#14E65100</color>
-    <color name="change_rescheduled_badge">#E65100</color>
+    <color name="change_rescheduled_container">#FFF1E0</color>
+    <color name="on_change_rescheduled_container">#4A1C00</color>
+
+    <!-- ═══ Day chip selectors reference ═══ -->
+    <color name="chip_unchecked_text">#42474E</color>
 </resources>

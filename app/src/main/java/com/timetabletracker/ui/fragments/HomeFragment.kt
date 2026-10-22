@@ -6,15 +6,16 @@ import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.timetabletracker.R
 import com.timetabletracker.data.api.models.DisplaySlot
+import com.timetabletracker.data.api.models.SlotChangeStatus
 import com.timetabletracker.databinding.FragmentHomeBinding
 import com.timetabletracker.scheduler.AlarmScheduler
 import com.timetabletracker.ui.AppStatus
@@ -47,7 +48,6 @@ class HomeFragment : Fragment() {
         binding.rvTimetableSlots.layoutManager = LinearLayoutManager(requireContext())
         binding.rvTimetableSlots.adapter = adapter
 
-        // Observe Status & Times
         viewModel.lastCheckTime.observe(viewLifecycleOwner) { time ->
             binding.tvLastChecked.text = getString(R.string.last_checked, time)
         }
@@ -59,10 +59,10 @@ class HomeFragment : Fragment() {
         viewModel.status.observe(viewLifecycleOwner) { status ->
             updateStatusBadge(status)
             binding.fabCheckNow.isEnabled = status != AppStatus.CHECKING
-            binding.progressBar.visibility = if (status == AppStatus.CHECKING) View.VISIBLE else View.GONE
+            binding.progressBar.visibility =
+                if (status == AppStatus.CHECKING) View.VISIBLE else View.GONE
         }
 
-        // Observe Timetable Display Slots
         viewModel.displaySlots.observe(viewLifecycleOwner) { displaySlots ->
             renderTimetable(displaySlots ?: emptyList())
         }
@@ -97,7 +97,7 @@ class HomeFragment : Fragment() {
             binding.layoutEmptyTimetable.visibility = View.VISIBLE
             binding.rvTimetableSlots.visibility = View.GONE
             binding.scrollDayChips.visibility = View.GONE
-            binding.tvClassCount.text = "0 classes"
+            binding.tvClassCount.text = getString(R.string.classes_count, 0)
             adapter.submitList(emptyList())
             return
         }
@@ -105,13 +105,11 @@ class HomeFragment : Fragment() {
         binding.layoutEmptyTimetable.visibility = View.GONE
         binding.rvTimetableSlots.visibility = View.VISIBLE
         binding.scrollDayChips.visibility = View.VISIBLE
-        binding.tvClassCount.text = "${slots.size} classes this week"
+        binding.tvClassCount.text = getString(R.string.classes_count, slots.size)
 
-        // Group slots by Date (e.g. "20-Oct-2026")
-        // Maintain chronological order
+        // Group slots by Date (e.g. "20-Oct-2026"), maintaining chronological order
         slotsByDay = slots.groupBy { it.slot.slotDate }
 
-        // Setup Day selector chips
         val chipGroup = binding.chipGroupDays
         chipGroup.removeAllViews()
 
@@ -122,18 +120,29 @@ class HomeFragment : Fragment() {
             val dayName = daySlots.firstOrNull()?.slot?.dayOfWeekDetails?.dayOfWeekName
                 ?: dayKey
 
-            // Short label, e.g. "Mon 20-Oct" or "Tuesday"
             val chip = Chip(requireContext()).apply {
-                text = "$dayName (${daySlots.size})"
+                setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_LabelLarge)
+                chipBackgroundColor = ContextCompat.getColorStateList(
+                    requireContext(), R.color.chip_day_bg
+                )
+                setTextColor(
+                    ContextCompat.getColorStateList(requireContext(), R.color.chip_day_text)
+                )
+                chipStrokeWidth = 0f
+                chipCornerRadius = 20f * resources.displayMetrics.density
+                chipMinHeight = 36f * resources.displayMetrics.density
+                isChipIconVisible = false
+                text = getString(R.string.day_chip_label, dayName, daySlots.size)
                 isCheckable = true
                 isClickable = true
                 id = View.generateViewId()
 
-                // Highlight chip if day contains any changed classes
-                val hasChangesOnDay = daySlots.any { it.changeStatus != com.timetabletracker.data.api.models.SlotChangeStatus.UNCHANGED }
-                if (hasChangesOnDay) {
-                    setChipStrokeColorResource(R.color.change_rescheduled_border)
-                    chipStrokeWidth = 3f
+                // Mark days that contain changes with a small colored dot in the label
+                val changedCount = daySlots.count {
+                    it.changeStatus != SlotChangeStatus.UNCHANGED
+                }
+                if (changedCount > 0) {
+                    text = getString(R.string.day_chip_label, dayName, daySlots.size) + " •"
                 }
 
                 setOnClickListener {
@@ -153,7 +162,6 @@ class HomeFragment : Fragment() {
             }
         }
 
-        // Show slots for selected day
         val activeDay = selectedDayKey ?: sortedDays.firstOrNull()
         if (activeDay != null) {
             updateSlotsForSelectedDay(activeDay)
@@ -162,10 +170,7 @@ class HomeFragment : Fragment() {
 
     private fun updateSlotsForSelectedDay(dayKey: String) {
         val slots = slotsByDay[dayKey] ?: emptyList()
-        // Sort slots chronologically by start time
-        val sorted = slots.sortedWith(compareBy(
-            { parse24Hour(it.slot.slotStartTime) }
-        ))
+        val sorted = slots.sortedWith(compareBy { parse24Hour(it.slot.slotStartTime) })
         adapter.submitList(sorted)
     }
 
@@ -184,29 +189,31 @@ class HomeFragment : Fragment() {
     }
 
     private fun updateStatusBadge(status: AppStatus) {
-        val (colorRes, text) = when (status) {
-            AppStatus.IDLE -> Pair(R.color.status_idle, "Idle")
-            AppStatus.CHECKING -> Pair(R.color.status_idle, "Checking…")
-            AppStatus.CHANGES_FOUND -> Pair(R.color.status_changes, "Changes Found")
-            AppStatus.NO_CHANGES -> Pair(R.color.status_ok, "No Changes")
-            AppStatus.ERROR -> Pair(R.color.status_error, "Error")
+        val (colorRes, textRes) = when (status) {
+            AppStatus.IDLE -> Pair(R.color.status_idle, R.string.status_idle)
+            AppStatus.CHECKING -> Pair(R.color.status_idle, R.string.status_checking)
+            AppStatus.CHANGES_FOUND -> Pair(R.color.status_changes, R.string.status_changes)
+            AppStatus.NO_CHANGES -> Pair(R.color.status_ok, R.string.status_no_changes)
+            AppStatus.ERROR -> Pair(R.color.status_error, R.string.status_error)
         }
-        binding.tvStatusBadge.text = text
-        binding.tvStatusBadge.setBackgroundColor(
-            ContextCompat.getColor(requireContext(), colorRes)
+        binding.tvStatusBadge.text = getString(textRes)
+        binding.tvStatusBadge.backgroundTintList =
+            ContextCompat.getColorStateList(requireContext(), colorRes)
+        binding.tvStatusBadge.setTextColor(
+            ContextCompat.getColor(requireContext(), R.color.on_status_idle)
         )
     }
 
     private fun showExactAlarmPermissionDialog() {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Permission Required")
-            .setMessage("To check the timetable at the exact scheduled time, please grant the 'Alarms & Reminders' permission in Settings.")
-            .setPositiveButton("Open Settings") { _, _ ->
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.alarm_dialog_title)
+            .setMessage(R.string.alarm_dialog_body)
+            .setPositiveButton(R.string.alarm_dialog_open) { _, _ ->
                 startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 })
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.alarm_dialog_dismiss, null)
             .show()
     }
 

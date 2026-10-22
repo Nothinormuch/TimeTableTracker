@@ -11,6 +11,7 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
+import com.timetabletracker.R
 import com.timetabletracker.data.api.models.DisplaySlot
 import com.timetabletracker.data.local.PreferencesManager
 import com.timetabletracker.data.local.SnapshotStorage
@@ -131,12 +132,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (result) {
                 is Result.Success -> {
                     _isLoggedIn.value = true
-                    _loginStatus.value = "✅ Login successful"
+                    _loginStatus.value = getApplication<Application>().getString(R.string.msg_login_success)
                     Log.d(TAG, "Credentials verified successfully")
                 }
                 is Result.Error -> {
                     _isLoggedIn.value = false
-                    _loginStatus.value = "❌ ${result.message}"
+                    _loginStatus.value = getApplication<Application>().getString(R.string.msg_login_failure, result.message)
                     Log.e(TAG, "Login verification failed: ${result.message}")
                 }
             }

@@ -1,36 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TimetableTracker</string>
+    <string name="app_name">Timetable Tracker</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_settings">Settings</string>
 
-    <!-- Home Fragment -->
-    <string name="last_checked">Last checked: %1$s</string>
-    <string name="next_check">Next check: %1$s</string>
-    <string name="check_now">Check Now</string>
-    <string name="timetable_section">Weekly Timetable</string>
-    <string name="no_timetable">No timetable loaded yet.</string>
-    <string name="no_timetable_sub">Tap \"Check Now\" to fetch your schedule from the UPES portal.</string>
-    <string name="changes_legend_added">Added</string>
-    <string name="changes_legend_deleted">Deleted</string>
-    <string name="changes_legend_rescheduled">Rescheduled</string>
+    <!-- Home -->
+    <string name="monitoring_status">Monitoring status</string>
+    <string name="last_checked">Last checked · %1$s</string>
+    <string name="next_check">Next check · %1$s</string>
+    <string name="check_now">Check now</string>
+    <string name="timetable_section">Timetable</string>
+    <string name="no_timetable">No timetable yet</string>
+    <string name="no_timetable_sub">Add your portal credentials in Settings, then run a check to load your schedule.</string>
+    <string name="classes_count">%1$d classes this week</string>
+    <string name="day_chip_label">%1$s · %2$d</string>
 
-    <!-- Settings Fragment -->
-    <string name="login_section">Login</string>
-    <string name="hint_email">UPES Email / User ID</string>
+    <!-- Slot badges -->
+    <string name="badge_added">Added</string>
+    <string name="badge_deleted">Removed</string>
+    <string name="badge_rescheduled">Changed</string>
+
+    <!-- Slot card detail dialog -->
+    <string name="detail_time">Time</string>
+    <string name="detail_date">Date</string>
+    <string name="detail_room">Room</string>
+    <string name="detail_faculty">Faculty</string>
+    <string name="detail_code">Course code</string>
+    <string name="detail_link">Open meeting link</string>
+    <string name="detail_close">Close</string>
+    <string name="detail_unspecified">Not specified</string>
+
+    <!-- Settings -->
+    <string name="login_section">Portal account</string>
+    <string name="hint_email">UPES email</string>
     <string name="hint_password">Password</string>
-    <string name="btn_login">Login &amp; Verify</string>
-    <string name="check_schedule">Check Schedule</string>
-    <string name="btn_change_time">Change Time</string>
+    <string name="btn_login">Sign in and verify</string>
+    <string name="check_schedule">Daily check</string>
+    <string name="check_schedule_sub">The portal is checked once a day at this time.</string>
     <string name="check_time_format">%1$d:%2$s %3$s</string>
     <string name="notifications_section">Notifications</string>
-    <string name="enable_notifications">System Notifications</string>
-    <string name="btn_save_settings">Save Settings</string>
+    <string name="enable_notifications">Alert when classes change</string>
+    <string name="btn_save_settings">Save settings</string>
     <string name="app_version">Version %1$s</string>
 
-    <!-- Notifications -->
-    <string name="notif_channel_changes">Timetable Changes</string>
-    <string name="notif_channel_alerts">App Alerts</string>
+    <!-- Login state badges -->
+    <string name="login_state_in">Signed in</string>
+    <string name="login_state_out">Not signed in</string>
+
+    <!-- Snackbar messages -->
+    <string name="msg_enter_credentials">Enter your email and password first.</string>
+    <string name="msg_login_success">Credentials verified.</string>
+    <string name="msg_login_failure">Login failed: %1$s</string>
+    <string name="msg_time_saved">Daily check set for %1$s.</string>
+    <string name="msg_settings_saved">Settings saved.</string>
+    <string name="msg_alarm_permission">Alarms &amp; reminders permission missing. Checks may be delayed.</string>
+    <string name="msg_checking">Checking timetable…</string>
+    <string name="msg_save_credentials_first">Save your credentials before running a check.</string>
+
+    <!-- Exact-alarm dialog -->
+    <string name="alarm_dialog_title">Grant exact alarm permission?</string>
+    <string name="alarm_dialog_body">Without this permission Android may delay scheduled checks. Open system settings to allow it.</string>
+    <string name="alarm_dialog_open">Open settings</string>
+    <string name="alarm_dialog_dismiss">Not now</string>
+
+    <!-- Status badge text -->
+    <string name="status_idle">Idle</string>
+    <string name="status_checking">Checking…</string>
+    <string name="status_changes">Changes found</string>
+    <string name="status_no_changes">Up to date</string>
+    <string name="status_error">Error</string>
+
+    <!-- Notifications (system) -->
+    <string name="notif_channel_changes">Timetable changes</string>
+    <string name="notif_channel_alerts">App alerts</string>
+    <string name="notif_title_changed">Timetable updated</string>
+    <string name="notif_title_single">Class change detected</string>
+    <string name="notif_title_added">New class added</string>
+    <string name="notif_title_removed">Class removed</string>
+    <string name="notif_title_check_failed">Check failed</string>
+    <string name="notif_title_auth">Login expired</string>
+    <string name="notif_body_check_failed">Could not reach the portal. Will retry at the next scheduled check.</string>
+    <string name="notif_body_auth">Open Timetable Tracker to update your portal credentials.</string>
 </resources>

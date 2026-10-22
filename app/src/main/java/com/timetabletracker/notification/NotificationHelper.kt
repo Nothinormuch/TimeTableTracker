@@ -66,8 +66,8 @@ object NotificationHelper {
 
         val notification = NotificationCompat.Builder(context, CHANNEL_CHANGES_ID)
             .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("📅 Timetable Changed!")
-            .setContentText(summary.lines().firstOrNull() ?: "Changes detected")
+            .setContentTitle(context.getString(R.string.notif_title_changed))
+            .setContentText(summary.lines().firstOrNull() ?: "")
             .setStyle(NotificationCompat.BigTextStyle().bigText(summary))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)

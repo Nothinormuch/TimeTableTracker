@@ -1,96 +1,148 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_slot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="14dp"
     android:layout_marginBottom="10dp"
-    android:background="@drawable/bg_slot_unchanged">
+    app:cardCornerRadius="14dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
 
-    <!-- Top Row: Time Range + Change Badge -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="6dp">
+        android:baselineAligned="false"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/tv_slot_time"
+        <!-- Change-status accent bar -->
+        <View
+            android:id="@+id/view_change_bar"
+            android:layout_width="4dp"
+            android:layout_height="match_parent"
+            android:background="@color/status_idle"
+            tools:layout_height="80dp" />
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
-            android:textColor="?attr/colorPrimary"
-            android:textStyle="bold"
-            tools:text="09:00 AM - 09:55 AM" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tv_change_badge"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceLabelSmall"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"
-            android:paddingHorizontal="8dp"
-            android:paddingVertical="3dp"
-            android:background="@drawable/bg_status_badge"
-            android:visibility="gone"
-            tools:text="ADDED"
-            tools:visibility="visible" />
+            <!-- Top row: time range + change badge -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_slot_time"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    tools:text="09:00 – 09:55" />
+
+                <TextView
+                    android:id="@+id/tv_change_badge"
+                    style="@style/Widget.TimetableTracker.Badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    tools:text="ADDED"
+                    tools:visibility="visible" />
+            </LinearLayout>
+
+            <!-- Subject name -->
+            <TextView
+                android:id="@+id/tv_module_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface"
+                android:textStyle="bold"
+                tools:text="Advanced Algorithms (CS301)" />
+
+            <!-- Details rows -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_location"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/tv_venue"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="Room 10206 · Class Room" />
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_person"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <TextView
+                    android:id="@+id/tv_teacher"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:maxWidth="160dp"
+                    android:singleLine="true"
+                    android:ellipsize="end"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="Dr. Sharma" />
+            </LinearLayout>
+
+            <!-- Change detail (e.g. "Room 10201 → 10206") -->
+            <LinearLayout
+                android:id="@+id/layout_change_detail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_info"
+                    app:tint="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/tv_change_detail"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurface"
+                    tools:text="Room 10201 → 10206" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-
-    <!-- Subject Name -->
-    <TextView
-        android:id="@+id/tv_module_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceTitleMedium"
-        android:textColor="?attr/colorOnSurface"
-        android:textStyle="bold"
-        android:layout_marginBottom="6dp"
-        tools:text="Advanced Algorithms (CS301)" />
-
-    <!-- Details Row: Venue + Faculty -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginBottom="4dp">
-
-        <TextView
-            android:id="@+id/tv_venue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:textAppearance="?attr/textAppearanceBodyMedium"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="📍 Room 10206 (Class Room)" />
-
-        <TextView
-            android:id="@+id/tv_teacher"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            tools:text="👤 Dr. Sharma" />
-    </LinearLayout>
-
-    <!-- Change Detail Explanation (if modified/rescheduled) -->
-    <TextView
-        android:id="@+id/tv_change_detail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?attr/textAppearanceBodySmall"
-        android:textStyle="italic"
-        android:textColor="?attr/colorOnSurface"
-        android:layout_marginTop="4dp"
-        android:visibility="gone"
-        tools:text="Note: Room changed from 10201 to 10206"
-        tools:visibility="visible" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

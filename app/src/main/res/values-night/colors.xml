@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ═══ Core palette — dark ═══ -->
+    <color name="primary">#9CCAFF</color>
+    <color name="on_primary">#003350</color>
+    <color name="primary_container">#004B70</color>
+    <color name="on_primary_container">#CCE5FF</color>
+
+    <color name="secondary">#4DDADC</color>
+    <color name="on_secondary">#002021</color>
+    <color name="secondary_container">#004F51</color>
+    <color name="on_secondary_container">#9CF1F2</color>
+
+    <!-- ═══ Surfaces ═══ -->
+    <color name="surface">#111417</color>
+    <color name="surface_container">#1B1F23</color>
+    <color name="surface_container_high">#242930</color>
+    <color name="on_surface">#E1E3E6</color>
+    <color name="on_surface_variant">#9BA1A8</color>
+    <color name="surface_variant">#3F474E</color>
+
+    <color name="background">#111417</color>
+    <color name="on_background">#E1E3E6</color>
+
+    <!-- ═══ Outlines ═══ -->
+    <color name="outline">#8B9096</color>
+    <color name="outline_variant">#41474D</color>
+
+    <!-- ═══ Error ═══ -->
+    <color name="error">#FFB4AB</color>
+    <color name="on_error">#690005</color>
+    <color name="error_container">#93000A</color>
+    <color name="on_error_container">#FFDAD6</color>
+
+    <!-- ═══ Semantic status colors (dark) ═══ -->
+    <color name="status_ok">#7BD07F</color>
+    <color name="on_status_ok">#0C3B10</color>
+    <color name="status_ok_container">#1D4423</color>
+    <color name="on_status_ok_container">#B4E5B8</color>
+
+    <color name="status_changes">#FFB265</color>
+    <color name="on_status_changes">#4A1C00</color>
+    <color name="status_changes_container">#5A3200</color>
+    <color name="on_status_changes_container">#FFDCC2</color>
+
+    <color name="status_error">#FFB4AB</color>
+    <color name="on_status_error">#690005</color>
+    <color name="status_error_container">#93000A</color>
+    <color name="on_status_error_container">#FFDAD6</color>
+
+    <color name="status_idle">#9BA7B0</color>
+    <color name="on_status_idle">#1A2830</color>
+    <color name="status_idle_container">#33404A</color>
+    <color name="on_status_idle_container">#C6D2DA</color>
+
+    <!-- ═══ Timetable change highlight colors (dark) ═══ -->
+    <color name="change_added_border">#7BD07F</color>
+    <color name="change_added_container">#173A1E</color>
+    <color name="on_change_added_container">#B4E5B8</color>
+
+    <color name="change_deleted_border">#FFB4AB</color>
+    <color name="change_deleted_container">#4A1518</color>
+    <color name="on_change_deleted_container">#FFDAD6</color>
+
+    <color name="change_rescheduled_border">#FFB265</color>
+    <color name="change_rescheduled_container">#4A2E10</color>
+    <color name="on_change_rescheduled_container">#FFDCC2</color>
+
+    <color name="chip_unchecked_text">#9BA1A8</color>
+</resources>

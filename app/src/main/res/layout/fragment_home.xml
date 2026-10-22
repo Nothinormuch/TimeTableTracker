@@ -9,99 +9,136 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="96dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp">
 
-            <!-- Status Card -->
+            <!-- ─── Status card ─── -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="2dp">
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="?attr/colorSurfaceContainer"
+                app:strokeWidth="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="8dp">
+                        android:orientation="horizontal">
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Monitoring Status"
-                            android:textAppearance="?attr/textAppearanceTitleMedium"
-                            android:textStyle="bold" />
+                            android:text="@string/monitoring_status"
+                            android:textAppearance="@style/TextAppearance.TimetableTracker.SectionTitle"
+                            android:textColor="?attr/colorOnSurface" />
 
                         <TextView
                             android:id="@+id/tv_status_badge"
+                            style="@style/Widget.TimetableTracker.Badge"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Idle"
-                            android:textColor="@android:color/white"
-                            android:textAppearance="?attr/textAppearanceLabelSmall"
-                            android:textStyle="bold"
-                            android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
-                            android:background="@drawable/bg_status_badge" />
-
+                            android:backgroundTint="@color/status_idle"
+                            tools:text="Idle" />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/tv_last_checked"
+                    <!-- Last / next check rows with icons -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Last checked: Not checked yet"
-                        android:textAppearance="?attr/textAppearanceBodyMedium"
-                        android:layout_marginBottom="4dp" />
+                        android:layout_marginTop="16dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/tv_next_check"
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_clock"
+                            app:tint="?attr/colorOnSurfaceVariant" />
+
+                        <TextView
+                            android:id="@+id/tv_last_checked"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            tools:text="Last checked · Not yet" />
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Next check: Not scheduled"
-                        android:textAppearance="?attr/textAppearanceBodyMedium" />
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
 
-                    <ProgressBar
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_calendar"
+                            app:tint="?attr/colorPrimary" />
+
+                        <TextView
+                            android:id="@+id/tv_next_check"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textColor="?attr/colorPrimary"
+                            android:textStyle="bold"
+                            tools:text="Next check · Tomorrow 8:00 AM" />
+                    </LinearLayout>
+
+                    <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progress_bar"
                         android:layout_width="match_parent"
-                        android:layout_height="4dp"
-                        android:layout_marginTop="8dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:indeterminate="true"
                         android:visibility="gone"
-                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                        android:indeterminate="true" />
-
+                        app:trackCornerRadius="2dp"
+                        app:trackThickness="4dp"
+                        tools:visibility="visible" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Timetable Section Header -->
+            <!-- ─── Timetable section header ─── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
+                android:layout_marginBottom="12dp"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:orientation="horizontal">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/timetable_section"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:textStyle="bold" />
+                    android:textAppearance="@style/TextAppearance.TimetableTracker.SectionTitle"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/tv_class_count"
@@ -109,71 +146,79 @@
                     android:layout_height="wrap_content"
                     android:textAppearance="?attr/textAppearanceLabelMedium"
                     android:textColor="?attr/colorOnSurfaceVariant"
-                    tools:text="12 classes" />
+                    tools:text="12 classes this week" />
             </LinearLayout>
 
-            <!-- Day Selector Tabs (Horizontal Scrolling Chips) -->
+            <!-- ─── Day selector chips ─── -->
             <HorizontalScrollView
                 android:id="@+id/scroll_day_chips"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingBottom="4dp"
                 android:scrollbars="none"
-                android:layout_marginBottom="12dp">
+                android:visibility="gone"
+                tools:visibility="visible">
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/chip_group_days"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true" />
+                    app:chipSpacingHorizontal="8dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true" />
             </HorizontalScrollView>
 
-            <!-- Empty State View -->
+            <!-- ─── Empty state ─── -->
             <LinearLayout
                 android:id="@+id/layout_empty_timetable"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
+                android:layout_marginTop="32dp"
                 android:gravity="center"
-                android:padding="32dp"
-                android:visibility="gone">
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="?attr/colorOnSurfaceVariant"
+                    android:alpha="0.5" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="📅"
-                    android:textSize="44sp"
-                    android:layout_marginBottom="12dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
                     android:text="@string/no_timetable"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    android:gravity="center" />
+                    android:textAppearance="@style/TextAppearance.TimetableTracker.SectionTitle"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
                     android:text="@string/no_timetable_sub"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:gravity="center"
-                    android:layout_marginTop="6dp" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
 
-            <!-- Timetable Slots RecyclerView -->
+            <!-- ─── Slots list ─── -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_timetable_slots"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:nestedScrollingEnabled="false"
-                android:layout_marginBottom="80dp" />
+                tools:itemCount="4"
+                tools:listitem="@layout/item_timetable_slot" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- FAB: Check Now -->
+    <!-- ─── Check Now FAB ─── -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_check_now"
         android:layout_width="wrap_content"
@@ -181,6 +226,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:text="@string/check_now"
-        app:icon="@drawable/ic_notification" />
+        android:textAppearance="?attr/textAppearanceLabelLarge"
+        app:icon="@drawable/ic_refresh"
+        app:iconTint="?attr/colorOnPrimaryContainer" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
