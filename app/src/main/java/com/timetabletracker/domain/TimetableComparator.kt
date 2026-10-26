@@ -52,6 +52,9 @@ object TimetableComparator {
         var deletedCount = 0
         var modifiedCount = 0
 
+        // Get all dates from current slots to determine which slots to check for deletions
+        val currentSlotDates = currentSlots.map { it.slotDate }.toSet()
+
         // 1. Process all current slots
         currentSlots.forEach { curr ->
             val key = curr.toKey()
@@ -115,10 +118,11 @@ object TimetableComparator {
             }
         }
 
-        // 2. Add DELETED slots from previous check (so they can be highlighted in red)
+        // 2. Add DELETED slots from previous check ONLY for dates present in current slots
+        // This prevents marking classes from previous days as deleted when they weren't fetched in this check
         previousSlots.forEach { prev ->
             val key = prev.toKey()
-            if (!currentMap.containsKey(key)) {
+            if (!currentMap.containsKey(key) && prev.slotDate in currentSlotDates) {
                 deletedCount++
                 val desc = "Removed: ${prev.moduleName()} on ${prev.slotDate} at ${prev.slotStartTime}"
                 changeDescriptions.add(desc)
