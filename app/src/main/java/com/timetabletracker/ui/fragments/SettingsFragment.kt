@@ -38,6 +38,14 @@ class SettingsFragment : Fragment() {
         // Populate current settings
         binding.switchNotifications.isChecked = viewModel.isNotificationsEnabled()
         updateCheckTimeDisplay(viewModel.getCheckHour(), viewModel.getCheckMinute())
+        binding.groupCheckFrequency.check(
+            when (viewModel.getCheckIntervalHours()) {
+                1 -> R.id.frequency_one_hour
+                2 -> R.id.frequency_two_hours
+                5 -> R.id.frequency_five_hours
+                else -> R.id.frequency_daily
+            }
+        )
         binding.tvAppVersion.text = getString(R.string.app_version, BuildConfig.VERSION_NAME)
 
         // Login status observer — badge shows signed-in state, detail line shows errors
@@ -79,7 +87,7 @@ class SettingsFragment : Fragment() {
                 .build()
 
             picker.addOnPositiveButtonClickListener {
-                viewModel.saveCheckTime(picker.hour, picker.minute)
+                val scheduled = viewModel.saveCheckTime(picker.hour, picker.minute)
                 updateCheckTimeDisplay(picker.hour, picker.minute)
                 val amPm = if (picker.hour < 12) "AM" else "PM"
                 val displayHour = when {
@@ -87,16 +95,35 @@ class SettingsFragment : Fragment() {
                     picker.hour > 12 -> picker.hour - 12
                     else -> picker.hour
                 }
-                Snackbar.make(
-                    binding.root,
+                val message = if (scheduled) {
                     getString(
                         R.string.msg_time_saved,
                         "$displayHour:${picker.minute.toString().padStart(2, '0')} $amPm"
-                    ),
-                    Snackbar.LENGTH_SHORT
-                ).show()
+                    )
+                } else {
+                    getString(R.string.msg_alarm_permission)
+                }
+                Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
             }
             picker.show(childFragmentManager, "time_picker")
+        }
+
+        binding.groupCheckFrequency.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (!isChecked) return@addOnButtonCheckedListener
+
+            val intervalHours = when (checkedId) {
+                R.id.frequency_one_hour -> 1
+                R.id.frequency_two_hours -> 2
+                R.id.frequency_five_hours -> 5
+                else -> 24
+            }
+            val scheduled = viewModel.saveCheckIntervalHours(intervalHours)
+            val messageRes = if (scheduled) {
+                R.string.msg_frequency_saved
+            } else {
+                R.string.msg_alarm_permission
+            }
+            Snackbar.make(binding.root, messageRes, Snackbar.LENGTH_LONG).show()
         }
 
         // Notification toggle
@@ -107,11 +134,13 @@ class SettingsFragment : Fragment() {
         // Save settings button
         binding.btnSave.setOnClickListener {
             viewModel.saveNotificationsEnabled(binding.switchNotifications.isChecked)
-            if (!AlarmScheduler.canScheduleExactAlarms(requireContext())) {
+            if (AlarmScheduler.canScheduleExactAlarms(requireContext())) {
+                Snackbar.make(binding.root, R.string.msg_settings_saved, Snackbar.LENGTH_SHORT)
+                    .show()
+            } else {
                 Snackbar.make(binding.root, R.string.msg_alarm_permission, Snackbar.LENGTH_LONG)
                     .show()
             }
-            Snackbar.make(binding.root, R.string.msg_settings_saved, Snackbar.LENGTH_SHORT).show()
         }
     }
 

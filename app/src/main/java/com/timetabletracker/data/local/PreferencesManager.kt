@@ -24,6 +24,8 @@ class PreferencesManager(context: Context) {
         // Plain keys
         const val KEY_CHECK_HOUR = "check_hour"
         const val KEY_CHECK_MINUTE = "check_minute"
+        const val KEY_CHECK_INTERVAL_HOURS = "check_interval_hours"
+        const val KEY_SCHEDULE_ANCHOR_TIME = "schedule_anchor_time"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_LAST_CHECK_TIME = "last_check_time"
         const val KEY_IS_MONITORING_ACTIVE = "is_monitoring_active"
@@ -31,6 +33,7 @@ class PreferencesManager(context: Context) {
         // Defaults
         const val DEFAULT_CHECK_HOUR = 8
         const val DEFAULT_CHECK_MINUTE = 0
+        const val DEFAULT_CHECK_INTERVAL_HOURS = 24
     }
 
     private val masterKey = MasterKey.Builder(context)
@@ -79,6 +82,14 @@ class PreferencesManager(context: Context) {
     var checkMinute: Int
         get() = plainPrefs.getInt(KEY_CHECK_MINUTE, DEFAULT_CHECK_MINUTE)
         set(value) = plainPrefs.edit().putInt(KEY_CHECK_MINUTE, value).apply()
+
+    var checkIntervalHours: Int
+        get() = plainPrefs.getInt(KEY_CHECK_INTERVAL_HOURS, DEFAULT_CHECK_INTERVAL_HOURS)
+        set(value) = plainPrefs.edit().putInt(KEY_CHECK_INTERVAL_HOURS, value).apply()
+
+    var scheduleAnchorTime: Long
+        get() = plainPrefs.getLong(KEY_SCHEDULE_ANCHOR_TIME, 0L)
+        set(value) = plainPrefs.edit().putLong(KEY_SCHEDULE_ANCHOR_TIME, value).apply()
 
     var notificationsEnabled: Boolean
         get() = plainPrefs.getBoolean(KEY_NOTIFICATIONS_ENABLED, true)

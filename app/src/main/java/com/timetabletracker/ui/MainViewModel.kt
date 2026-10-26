@@ -147,12 +147,27 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Saves the check time and reschedules the alarm.
      */
-    fun saveCheckTime(hour: Int, minute: Int) {
+    fun saveCheckTime(hour: Int, minute: Int): Boolean {
         prefsManager.checkHour = hour
         prefsManager.checkMinute = minute
-        AlarmScheduler.scheduleDailyAlarm(context)
+        val scheduled = AlarmScheduler.scheduleAlarms(context, resetAnchor = true)
         _nextCheckTime.value = AlarmScheduler.getNextAlarmTimeString(context)
         Log.d(TAG, "Check time saved: $hour:${minute.toString().padStart(2, '0')}")
+        return scheduled
+    }
+
+    /**
+     * Saves the repeat interval and starts a new schedule from the selected time.
+     */
+    fun saveCheckIntervalHours(intervalHours: Int): Boolean {
+        require(intervalHours in setOf(1, 2, 5, 24)) {
+            "Unsupported check interval: $intervalHours hours"
+        }
+        prefsManager.checkIntervalHours = intervalHours
+        val scheduled = AlarmScheduler.scheduleAlarms(context, resetAnchor = true)
+        _nextCheckTime.value = AlarmScheduler.getNextAlarmTimeString(context)
+        Log.d(TAG, "Check interval saved: $intervalHours hour(s)")
+        return scheduled
     }
 
     fun saveNotificationsEnabled(enabled: Boolean) {
@@ -161,6 +176,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getCheckHour(): Int = prefsManager.checkHour
     fun getCheckMinute(): Int = prefsManager.checkMinute
+    fun getCheckIntervalHours(): Int = prefsManager.checkIntervalHours
     fun isNotificationsEnabled(): Boolean = prefsManager.notificationsEnabled
     fun clearErrorMessage() { _errorMessage.value = null }
 }

@@ -4,90 +4,153 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.text.format.DateFormat
 import android.util.Log
+import com.timetabletracker.R
 import com.timetabletracker.data.local.PreferencesManager
 import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 /**
- * Manages scheduling of exact daily alarms using AlarmManager.
- * Alarm fires at the user-configured time and is rescheduled daily.
+ * Manages exact timetable-check alarms. Interval schedules keep a rolling
+ * 24-hour set of alarms anchored to the user's selected first-check time.
  */
 object AlarmScheduler {
 
     private const val TAG = "AlarmScheduler"
-    private const val REQUEST_CODE = 100
+    private const val REQUEST_CODE_BASE = 100
+    private const val MAX_ALARMS = 24
+    private val supportedIntervals = setOf(1, 2, 5, 24)
 
     /**
-     * Schedules (or reschedules) the daily timetable check alarm.
-     * If the target time today has already passed, schedules for tomorrow.
+     * Replaces the current alarm set. Reset the anchor after the user changes
+     * the selected time or repeat interval.
      */
-    fun scheduleDailyAlarm(context: Context) {
+    fun scheduleAlarms(context: Context, resetAnchor: Boolean = false): Boolean {
         val prefs = PreferencesManager(context)
-        val hour = prefs.checkHour
-        val minute = prefs.checkMinute
+        val intervalHours = prefs.checkIntervalHours
+        if (intervalHours !in supportedIntervals) {
+            Log.e(TAG, "Unsupported check interval: $intervalHours hours")
+            return false
+        }
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = buildAlarmIntent(context)
-
-        val triggerTime = getNextTriggerTime(hour, minute)
-        Log.d(TAG, "Scheduling alarm for ${hour}:${minute.toString().padStart(2, '0')} → $triggerTime ms")
+        val now = System.currentTimeMillis()
+        val triggerTimes = if (intervalHours == 24) {
+            listOf(getNextTriggerTime(prefs.checkHour, prefs.checkMinute))
+        } else {
+            val intervalMillis = TimeUnit.HOURS.toMillis(intervalHours.toLong())
+            val anchor = when {
+                resetAnchor || prefs.scheduleAnchorTime == 0L ->
+                    getNextTriggerTime(prefs.checkHour, prefs.checkMinute)
+                        .also { prefs.scheduleAnchorTime = it }
+                else -> prefs.scheduleAnchorTime
+            }
+            val elapsedIntervals = if (now < anchor) {
+                0L
+            } else {
+                (now - anchor) / intervalMillis + 1
+            }
+            var nextTime = anchor + elapsedIntervals * intervalMillis
+            val horizon = now + TimeUnit.HOURS.toMillis(24)
+            buildList {
+                while (nextTime < horizon && size < MAX_ALARMS) {
+                    add(nextTime)
+                    nextTime += intervalMillis
+                }
+            }
+        }
 
         try {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerTime,
-                intent
-            )
+            cancelScheduledAlarms(context, alarmManager)
+            triggerTimes.forEachIndexed { index, triggerTime ->
+                alarmManager.setExactAndAllowWhileIdle(
+                    AlarmManager.RTC_WAKEUP,
+                    triggerTime,
+                    buildAlarmIntent(context, index)
+                )
+            }
             prefs.isMonitoringActive = true
-            Log.i(TAG, "Daily alarm scheduled successfully")
+            Log.i(
+                TAG,
+                "Scheduled ${triggerTimes.size} check alarm(s), interval=$intervalHours hour(s)"
+            )
+            return true
         } catch (e: SecurityException) {
+            cancelScheduledAlarms(context, alarmManager)
+            prefs.isMonitoringActive = false
             Log.e(TAG, "Cannot set exact alarm — permission not granted", e)
+            return false
         }
     }
 
     /**
-     * Cancels the currently scheduled alarm.
+     * Cancels every alarm in the rolling schedule.
      */
     fun cancelAlarm(context: Context) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val intent = buildAlarmIntent(context)
-        alarmManager.cancel(intent)
+        cancelScheduledAlarms(context, alarmManager)
         PreferencesManager(context).isMonitoringActive = false
-        Log.i(TAG, "Alarm cancelled")
+        Log.i(TAG, "Check alarms cancelled")
     }
 
     /**
      * Returns true if an exact alarm can be scheduled on this device.
      */
     fun canScheduleExactAlarms(context: Context): Boolean {
-        val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        return am.canScheduleExactAlarms()
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        return alarmManager.canScheduleExactAlarms()
     }
 
     /**
-     * Returns a human-readable string of the next scheduled alarm time.
+     * Returns a human-readable description of the next scheduled check.
      */
     fun getNextAlarmTimeString(context: Context): String {
         val prefs = PreferencesManager(context)
         if (!prefs.isMonitoringActive) return "Not scheduled"
-        val hour = prefs.checkHour
-        val minute = prefs.checkMinute
-        val amPm = if (hour < 12) "AM" else "PM"
-        val displayHour = when {
-            hour == 0 -> 12
-            hour > 12 -> hour - 12
-            else -> hour
+
+        val nextTriggerTime = if (prefs.checkIntervalHours == 24) {
+            getNextTriggerTime(prefs.checkHour, prefs.checkMinute)
+        } else {
+            val intervalMillis = TimeUnit.HOURS.toMillis(prefs.checkIntervalHours.toLong())
+            val anchor = if (prefs.scheduleAnchorTime == 0L) {
+                getNextTriggerTime(prefs.checkHour, prefs.checkMinute)
+            } else {
+                prefs.scheduleAnchorTime
+            }
+            val now = System.currentTimeMillis()
+            val elapsedIntervals = if (now < anchor) {
+                0L
+            } else {
+                (now - anchor) / intervalMillis + 1
+            }
+            anchor + elapsedIntervals * intervalMillis
         }
-        return "Daily at $displayHour:${minute.toString().padStart(2, '0')} $amPm"
+
+        val time = DateFormat.getTimeFormat(context).format(nextTriggerTime)
+        return if (prefs.checkIntervalHours == 24) {
+            context.getString(R.string.next_check_daily, time)
+        } else {
+            val unit = context.getString(
+                if (prefs.checkIntervalHours == 1) R.string.hour_singular else R.string.hour_plural
+            )
+            context.getString(R.string.next_check_interval, time, prefs.checkIntervalHours, unit)
+        }
     }
 
-    private fun buildAlarmIntent(context: Context): PendingIntent {
+    private fun cancelScheduledAlarms(context: Context, alarmManager: AlarmManager) {
+        repeat(MAX_ALARMS) { index ->
+            alarmManager.cancel(buildAlarmIntent(context, index))
+        }
+    }
+
+    private fun buildAlarmIntent(context: Context, index: Int): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             action = AlarmReceiver.ACTION_CHECK_TIMETABLE
         }
         return PendingIntent.getBroadcast(
             context,
-            REQUEST_CODE,
+            REQUEST_CODE_BASE + index,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -100,7 +163,6 @@ object AlarmScheduler {
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
         }
-        // If the time has already passed today, schedule for tomorrow
         if (calendar.timeInMillis <= System.currentTimeMillis()) {
             calendar.add(Calendar.DAY_OF_MONTH, 1)
         }

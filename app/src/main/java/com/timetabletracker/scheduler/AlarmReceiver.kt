@@ -13,8 +13,8 @@ import com.timetabletracker.worker.TimetableFetchWorker
 import java.util.concurrent.TimeUnit
 
 /**
- * BroadcastReceiver triggered by AlarmManager at the scheduled daily time.
- * Enqueues a one-off WorkManager job and reschedules the next day's alarm.
+ * BroadcastReceiver triggered by each scheduled AlarmManager check.
+ * Enqueues a one-off WorkManager job and refreshes the rolling alarm set.
  */
 class AlarmReceiver : BroadcastReceiver() {
 
@@ -44,7 +44,7 @@ class AlarmReceiver : BroadcastReceiver() {
 
         WorkManager.getInstance(context).enqueue(workRequest)
 
-        // Reschedule the next day's alarm
-        AlarmScheduler.scheduleDailyAlarm(context)
+        // Refill the rolling set of interval alarms.
+        AlarmScheduler.scheduleAlarms(context)
     }
 }

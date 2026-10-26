@@ -8,7 +8,7 @@ import com.timetabletracker.data.local.PreferencesManager
 
 /**
  * BroadcastReceiver for BOOT_COMPLETED.
- * Re-registers the daily alarm after device reboot, since AlarmManager
+ * Re-registers the check alarms after device reboot, since AlarmManager
  * alarms are cleared when the device reboots.
  */
 class BootReceiver : BroadcastReceiver() {
@@ -29,8 +29,8 @@ class BootReceiver : BroadcastReceiver() {
 
         val prefs = PreferencesManager(context)
         if (prefs.isMonitoringActive && prefs.isLoggedIn()) {
-            Log.i(TAG, "Re-scheduling daily alarm after reboot")
-            AlarmScheduler.scheduleDailyAlarm(context)
+            Log.i(TAG, "Re-scheduling check alarms after reboot")
+            AlarmScheduler.scheduleAlarms(context)
         } else {
             Log.d(TAG, "Monitoring was not active before reboot — skipping")
         }

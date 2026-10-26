@@ -4,9 +4,9 @@ A native Android app (Kotlin) that monitors the UPES student portal for timetabl
 
 ### 🔋 Battery & Background Philosophy
 **TimetableTracker does not run continuously in the background.**
-Instead of using foreground services or holding CPU wake locks, it uses Android's `AlarmManager.setExactAndAllowWhileIdle()` to wake up only at your chosen schedule (e.g. once a day at 8:00 AM).
+Instead of using foreground services or holding CPU wake locks, it uses Android's `AlarmManager.setExactAndAllowWhileIdle()` to wake up only at your chosen schedule (daily or at a 1-, 2-, or 5-hour interval).
 - **Between alarms:** The app process is 100% dead. Zero CPU usage, zero RAM, zero battery drain.
-- **When alarm fires:** Android awakens a `BroadcastReceiver` briefly (~10s) which dispatches a one-shot `WorkManager` job to fetch and compare the timetable.
+- **When an alarm fires:** Android awakens a `BroadcastReceiver` briefly (~10s) which dispatches a one-shot `WorkManager` job to fetch and compare the timetable. Interval schedules keep a rolling set of alarms for the next 24 hours.
 - **After check:** New timetable snapshot replaces the old one, change highlights are saved, system notifications are fired if changes are detected, the next alarm is queued with the OS, and the app process dies immediately.
 - **Reboot survival:** A `BOOT_COMPLETED` receiver re-registers your exact alarm after device reboot.
 
@@ -122,7 +122,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 ### 3. Usage Flow
 1. Open the app and head to the **Settings** tab.
 2. Enter your UPES student email and password, then tap **Login & Verify**.
-3. Select your preferred daily check time (default is 8:00 AM) and tap **Save Settings**.
+3. Choose the first check time (default is 8:00 AM) and select **Daily**, **1 hour**, **2 hours**, or **5 hours** in Settings. Interval checks continue at that cadence across day boundaries.
 4. Go to the **Home** tab and tap **Check Now** to run an immediate baseline check.
 5. View your timetable organized day-by-day. Any changes from the previous check will be immediately highlighted with color-coded borders.
 
